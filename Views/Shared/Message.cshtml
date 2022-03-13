@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = "Message";
+
+    // For default we use the _LayoutTwoColumn layout page. But via ViewBag we can dynamically set a different layout
+    // page from our controllers when we want. We use this for example when the user is doing things from their
+    // submenu under the profile menu item in the toplevel menu. Then we set ViewBag.Layout = "_LayoutUserHome.cshtml";
+    if (ViewBag.Layout == null)
+    {
+        Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/" + ViewBag.Layout;
+    }
+}
+<h2>@ViewBag.Message</h2>

@@ -1,0 +1,10 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.AssignmentDto>
+@{
+    ViewBag.Title = "Assignments";
+}
+<fieldset>
+    <legend>Assignments</legend>
+    @{Html.RenderPartial("_Pager");}
+    @{Html.RenderPartial("_AssignmentList", Model);}
+    @{Html.RenderPartial("_Pager");}
+</fieldset>

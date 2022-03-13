@@ -1,0 +1,45 @@
+﻿@{
+    var pagerType = ViewBag.PagerType;
+    var listObjectName = (string)ViewBag.ListObjectName;
+    var areaIdentifier = ViewBag.AreaIdentifier;
+    var currentPage = ViewBag.CurrentPage;
+    var hasNextPageOfData = ViewBag.HasNextPageOfData;
+    var controller = ViewBag.Controller;
+    var action = ViewBag.Action;  
+}
+<div class="Pager">
+@*Matches ActionMethods with one parameter, like: Index(int? id)*@ 
+@if (pagerType == "OneParameterActionMethod")
+{
+    if (currentPage > 1)
+    {
+        <div class="PagerPreviousPage">
+            @Html.ActionLink("<< Previous", (string)action, (string)controller, new { id = currentPage - 1 }, new { @class = "button" })</div>                
+        <div class="PagerPageNavigation">
+            &nbsp;&nbsp;</div>                        
+    }
+    if (hasNextPageOfData)
+    {       
+        <div class="PagerNextPage">
+        @Html.ActionLink("More " + listObjectName + " >>", (string)action, (string)controller, new { id = currentPage + 1 }, new { @class = "button" })      
+        </div> 
+    }
+}
+@*Matches ActionMethods with two parameters, like: Region(string id, int? pageNumber)*@ 
+@if ((string)pagerType == "TwoParametersActionMethod")
+{
+    if (currentPage > 1)
+    {
+        <div class="PagerPreviousPage">
+            @Html.ActionLink("<< Previous", (string)action, (string)controller, new { id = areaIdentifier, pageNumber = currentPage - 1 }, new { @class = "button" })</div>                
+        <div class="PagerPageNavigation">
+            &nbsp;&nbsp;</div>                        
+    }
+    if (hasNextPageOfData)
+    {       
+        <div class="PagerNextPage">
+        @Html.ActionLink("More " + listObjectName + " >>", (string)action, (string)controller, new { id = areaIdentifier, pageNumber = currentPage + 1 }, new { @class = "button" })      
+        </div> 
+    }
+}
+</div>

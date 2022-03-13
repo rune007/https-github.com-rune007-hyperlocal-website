@@ -1,0 +1,135 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.UserDto>
+@{
+    ViewBag.Title = "My Contacts";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<fieldset>
+    <legend>
+        @if (@Model.Count() > 0)
+        {
+            <text>My Contacts</text>
+        }
+        else
+        {
+            <text>You don't have any Contacts</text>
+        }
+    </legend>
+    @{Html.RenderPartial("_Pager");}
+    <table style="width: 100%">
+        <tr>
+            <th>
+                Photo
+            </th>
+            <th>
+                Last Login Map
+            </th>
+            <th>
+                Data
+            </th>
+            <th>
+                Address Map
+            </th>
+            <th>
+                Admin
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr id="row-@item.UserID">
+                <td>
+                    <a href="@Url.Action("Details", "User", new { id = @item.UserID })">
+                        @if (item.HasPhoto)
+                        {
+                            <img alt="@item.FullName" src="@item.MediumSizeBlobUri" height="100" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="100" />
+                        }
+                        <br />
+                        @item.FullName
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "User", new { id = @item.UserID })">
+                        <img alt="@item.FullName" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594, 11.645507812500017/5?mapSize=300,200&pp=@item.LastLoginLatitude,@item.LastLoginLongitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="100" />
+                        <br />
+                        Last Login @item.LastLoginDateTime
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "User", new { id = @item.UserID })">Phone:<br />
+                        @item.PhoneNumber<br />
+                        <br />
+                        Email:<br />
+                        @item.Email<br />
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "User", new { id = @item.UserID })">
+                        <img alt="@item.FullName" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594, 11.645507812500017/5?mapSize=300,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="100" />
+                        <br />
+                        @item.Address
+                    </a>
+                </td>
+                <td align="center">
+                    <button meta:id="@item.UserID" meta:title="@item.FullName">
+                        Stop Sharing Contact Information
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    /* Deleting a Contact. */
+    $('button').click
+    (
+    	function () {
+    	    var userName = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Stop Sharing Contact Information with ' + userName + '?';
+    	    var doDelete = confirm(confirmMessage);
+
+    	    if (doDelete) {
+    	        var userId = $(this).attr("meta:id");
+
+    	        $.post
+                (
+			        "/ContactInfo/StopSharing",
+			        { userId: userId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+			                /* Removing the deleted item. */
+			                $("#row-" + userId).slideUp();
+			                $("#row-" + userId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+</script>

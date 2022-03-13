@@ -1,0 +1,29 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "News - " + ViewBag.REGIONNAVN;
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        News - Region @ViewBag.REGIONNAVN
+        | @Html.ActionLink("Communities", "Region", "Community", new { id = @ViewBag.Region }, null)
+        | @Html.ActionLink("Users", "Region", "User", new { id = @ViewBag.Region }, null)
+        | @Html.ActionLink("Areas", "Region", "Area", new { id = @ViewBag.Region }, null)
+    </h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_RegionMenu", "GeoNavigationMenu", new { region = @ViewBag.Region });}
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapNewsItemList", Model);}
+    </div>
+</div>
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_NewsItemList", Model);}
+    </ul>
+}

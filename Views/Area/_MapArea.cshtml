@@ -1,0 +1,243 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PolygonDto>
+@{
+    /* Allowing us to control the size of the map from the controller via ViewBag. */
+    var mapSize = "Small";
+
+    if (ViewBag.MapSize != null)
+    {
+        mapSize = ViewBag.MapSize;
+    }
+}
+<script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3" type="text/javascript"></script>
+<script src="../../Scripts/jquery-1.5.1.js" type="text/javascript"></script>
+<script type="text/javascript">
+    try {
+        var map = null;
+        function GetMap() {
+            map = new VEMap('myMap');
+            map.SetDashboardSize(VEDashboardSize.Small);
+            map.LoadMap();
+        }
+    }
+    catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+
+</script>
+@*We can choose to render the map in different sizes.*@
+@if (mapSize == "ExtraSmall")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 580px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Small")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 640px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Medium")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 870px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Large")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 100%; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+<script type="text/javascript">
+    try {
+        // This counter is used to keep track of the number of iterations as we iterate through the polygons to display.
+        var counter = 0;
+        // Used for storing VE
+        var polygonPoints = [];
+        var pointsTwo = [];
+
+
+        var items = @(Html.JSValue(Model))
+
+        if (items != null)
+        {
+           ProcessData(items);
+        }
+
+        function ProcessData(items)
+        {
+            GetMap();
+            $.each
+            (
+                items,
+                function (i, polygonItem) {
+
+                    var polygonWkt = polygonItem.PolygonWkt;
+                    counter = i;          
+                    ConvertWktPolygonToVeShape(polygonWkt);             
+                }
+            );
+        }
+
+    
+        // Converts Polygon WKT to VEShape.    
+        function ConvertWktPolygonToVeShape(wkt) {
+
+            // This is an array which contains arrays of VELatLong() points, which are making up the shapes in the polygon.
+            // If it's a simple polygon pointArrays will only contain one array of VELatLong() points.
+            // But if the polygon is complex (That is, it has holes), then pointArrays will contain an array of VELatLong() points for every hole in the polygon.
+            var pointArrays = [];
+
+            // Removing 'POLYGON (' and the last ')' from WKT.
+            wkt = wkt.replace('POLYGON (', '');
+            wkt = wkt.slice(0, -1);
+
+            // Getting an array of almost well-formed shape coordinates (Just need to replace some '(' and ')' away.), e.g.: '(-102 41, -109 41, -109 37, -102 37, -102 41'
+            wktShapes = wkt.split('), (');
+
+            // Iterating through the wktShapes.
+            for (var i = 0; i < wktShapes.length; i++) {
+
+                // replacing some '(' and ')' away. To make perfectly formed coordinate sets
+                var wktShape = wktShapes[i].replace('(', '')
+                wktShape = wktShape.replace(')', '')
+
+                // Putting the perfectly formed coordinate sets into the wktShapes array.
+                wktShapes[i] = wktShape;
+
+                // The enclosing polygon is the first set of coordinate sets.
+                if (i == 0) {
+                    // Storing an array of VELatLong() points, which are making up the enclosing shape in the polygon.
+                    pointArrays.push(CreatePolygonPointArray(wktShapes[i]));
+                }
+                // The following set of coordinate sets are the eventual holes in the polygon.
+                else {
+                    // Storing an array of VELatLong() points, which are making up a hole in the polygon.
+                    pointArrays.push(CreatePolygonHolePointArray(wktShapes[i]));
+                }
+            }
+
+            var shapes = CreateComplexPolygon(pointArrays);
+
+            for (var i = 0; i < shapes.length; i++) {
+                map.AddShape(shapes[i]);
+            }
+        }
+
+
+        // Receives a string with sets of coordinate sets for a polygon and returns an array of VELatLong point objects for the same shape.
+        function CreatePolygonPointArray(coordinateSets) {
+
+            // This should store objects like: ['12.518405914319676 55.709173951207539', '12.539563178975145 55.707360541320753']
+            var wktCoordinatePairs = [];
+            // Shall store WKT coordinate sets that looks like this: ['12.518405914319676', '55.709173951207539']
+            var wktCoordinateSets = [];
+            // Here we will store objects like: 'VELatLong(55.709173951207539, 12.518405914319676)'
+            var veLatLongPoints = [];
+
+            // Getting an array of wktCoordinatePairs.
+            wktCoordinatePairs = coordinateSets.split(',');
+
+            // Iterating through the wktCoordinatePairs
+            for (var i = 0; i < wktCoordinatePairs.length; i++) {
+
+                // Splitting each of the wktCoordinatePairs into wktCoordinateSets
+                wktCoordinateSets = wktCoordinatePairs[i].trim().split(' ');
+
+                // Storing the VELatLong point in the veLatLongPoints array.
+                veLatLongPoints.push(new VELatLong(parseFloat(wktCoordinateSets[1]), parseFloat(wktCoordinateSets[0])));
+            }
+            return veLatLongPoints;
+        }
+
+
+        // Receives a string with sets of coordinate sets for a polygon hole and returns an array of VELatLong point objects for the same shape.
+        function CreatePolygonHolePointArray(coordinateSets) {
+
+            // This should store objects like: ['12.518405914319676 55.709173951207539', '12.539563178975145 55.707360541320753']
+            var wktCoordinatePairs = [];
+            // Shall store WKT coordinate sets that looks like this: ['12.518405914319676', '55.709173951207539']
+            var wktCoordinateSets = [];
+            // Here we will store objects like: 'VELatLong(55.709173951207539, 12.518405914319676)'
+            var veLatLongPoints = [];
+
+            // Getting an array of wktCoordinatePairs.
+            wktCoordinatePairs = coordinateSets.split(',');
+
+            // Iterating backwards through the wktCoordinatePairs, because the WKT representation of a hole in a polygon has a reversed order of the 
+            // sets of coordinate sets as to compared to a normal polygon.
+            for (var i = wktCoordinatePairs.length - 1; i > 0; --i) {
+
+                // Splitting each of the wktCoordinatePairs into wktCoordinateSets
+                wktCoordinateSets = wktCoordinatePairs[i].trim().split(' ');
+
+                // Storing the VELatLong point in the veLatLongPoints array.
+                veLatLongPoints.push(new VELatLong(parseFloat(wktCoordinateSets[1]), parseFloat(wktCoordinateSets[0])));
+            }
+            return veLatLongPoints;
+        }
+
+
+        // This function receives arrays of VELatLong points for shapes (polygons & polygon holes)
+        // It turns these arrays of VELatLong points into VEShapes which is what the Bing map understands.
+        // The first half of the code in this function I have picked up from Ricky Brundritt's blog:
+        // http://rbrundritt.wordpress.com/2009/02/18/advance-polygon-shapes-in-virtual-earth/
+        function CreateComplexPolygon(polyPoints) {
+            if (polyPoints.length > 0) {
+                var anchor = polyPoints[0][0];
+                var points = polyPoints[0].concat(anchor);
+                var lines = new Array();
+
+                var line = new VEShape(VEShapeType.Polyline, points);
+                line.HideIcon();
+                lines.push(line);
+
+                for (var i = 1; i < polyPoints.length; i++) {
+                    points = points.concat(polyPoints[i], polyPoints[i][0], anchor);
+
+                    var line = new VEShape(VEShapeType.Polyline, polyPoints[i].concat(polyPoints[i][0]));
+                    line.HideIcon();
+
+                    lines.push(line);
+                }
+
+                var polygon = new VEShape(VEShapeType.Polygon, points);
+
+                    // The code below adjusts the map as we iterate through the polygons to display.
+                    // Getting the points of the first iteration.
+                    if (counter == 0) {
+                        polygonPoints = polygon.GetPoints();
+                    }
+
+                    // Concatenating the points of the first iteration to the following iterations.
+                    else {
+                        pointsTwo = polygon.GetPoints();
+                        polygonPoints = polygonPoints.concat(pointsTwo);
+                    }
+
+                    // Setting the map view in the last iteration.
+                    if (counter == items.length - 1) {
+                        map.SetMapView(polygonPoints);
+                    }
+
+                polygon.SetLineColor(new VEColor(0, 0, 0, 0));
+                polygon.HideIcon();
+
+                return lines.concat(polygon);
+            }
+            return null;
+        }
+    }
+    catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+</script>

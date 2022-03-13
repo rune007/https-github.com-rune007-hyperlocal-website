@@ -1,0 +1,25 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "News - " + ViewBag.POSTNR_TXT_POSTBYNAVN;
+    Layout = "~/Views/Shared/_LayoutTwoColumnB.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        News - @ViewBag.POSTNR_TXT_POSTBYNAVN
+        | @Html.ActionLink("Communities", "PostalCode", "Community", new { id = @ViewBag.POSTNR_TXT }, null)
+        | @Html.ActionLink("Users", "PostalCode", "User", new { id = @ViewBag.POSTNR_TXT }, null)
+        | @Html.ActionLink("Areas", "PostalCode", "Area", new { id = @ViewBag.POSTNR_TXT }, null)</h2>
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapNewsItemList", Model);}
+    </div>
+</div>
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_NewsItemList", Model);}
+    </ul>
+}
+@{ Html.RenderPartial("_PollingForLatestBreakingNewsFromPostalCodeJavaScript"); }

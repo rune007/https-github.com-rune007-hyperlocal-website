@@ -1,0 +1,30 @@
+﻿@model HLWebRole.HLServiceReference.MessageDto
+@{
+    ViewBag.Title = "Details";
+}
+<div id="one-column" style="width: 51%;">
+    <fieldset>
+        <legend>
+            <img alt="@Model.ReceiverUserName" src="@Model.ReceiverPhotoUri" height="50" />
+            Message To<br />
+            @Model.ReceiverUserName</legend>
+        <div class="display-label">
+            <b>Date:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => model.CreateDate)
+        </div>
+        <br />
+        <div class="display-label">
+            <b>Subject:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => model.Subject)
+        </div>
+        <br />
+        <div class="display-label">
+            <b>Message:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => model.MessageBody)
+        </div>
+        <br />
+    </fieldset>
+</div>

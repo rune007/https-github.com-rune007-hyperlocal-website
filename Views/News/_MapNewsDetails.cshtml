@@ -1,0 +1,63 @@
+﻿@model HLWebRole.Models.NewsItemModel
+@*My Map implementation is based on modyfying code I found in the book:
+Haack/Hanselman/Guthrie/Conery, "Professional ASP.NET MVC 1", Willey Publishing, USA 2009, p. 146 -  156.*@
+<script src="http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.2" type="text/javascript"></script>
+<script src="../../Scripts/map-plot-location.js" type="text/javascript"></script>
+<div id="theMap" style="position: relative; width: 580px; height: 490px; left: 0px;
+    top: 0px; border: 1px solid;">
+</div>
+<script type="text/javascript">
+
+    try {  
+        jQuery(document).ready(function() {
+
+            // Geocoding against Bing Maps Service.
+            jQuery("#Address").blur
+            (
+                function (evt) {
+
+                    var address = jQuery.trim(jQuery("#Address").val());
+                    if (address.length < 1)
+                        return;
+
+                    FindAddressOnMap(address);
+
+                    /* This validates our Latitude field (Remote validation checking whether Lat/Long are within Danish territory.) */
+                    jQuery('form').validate().element("#Latitude");
+                }
+            );
+
+            var latitude = @(Model.Latitude)
+            var longitude = @(Model.Longitude)
+
+            if ((latitude == 0) || (longitude == 0))
+                LoadMap();
+            else
+                LoadMap(latitude, longitude, mapLoaded);
+        });
+     
+      
+       function mapLoaded() {
+
+            var title = '@(Model.Title)';
+            var address = '';  
+            LoadPin(center, title, address);
+            map.SetZoomLevel(14);
+        } 
+
+
+       // Handling the shape.onenddrag event for the draggable pushpin. 
+       function EndDragHandler(e) {
+       var location = e.LatLong;
+       var lat = location.Latitude;
+       var long = location.Longitude;
+
+        jQuery("#Latitude").val(lat);
+        jQuery("#Longitude").val(long);
+    };
+    }
+    catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+
+</script>

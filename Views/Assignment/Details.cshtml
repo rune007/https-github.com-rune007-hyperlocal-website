@@ -1,0 +1,92 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    var assignmentDto = (HLWebRole.HLServiceReference.AssignmentDto)ViewBag.AssignmentDto;
+    ViewBag.Title = "Assignment: " + assignmentDto.Title;
+    Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+}
+@if (assignmentDto.AreaPolygonWkt != null)
+{
+    <h2>
+        Geo Assignment @@@assignmentDto.AssignmentCenterAddress / Radius: @assignmentDto.AssignmentRadius
+        Km</h2>
+}
+else
+{
+    <h2>
+        Assignment</h2>
+}
+<fieldset>
+    <legend>@assignmentDto.Title</legend>
+    @if (@assignmentDto.LatestActivity != null)
+    {
+        <text><b>Latest Activity: </b>@assignmentDto.LatestActivity
+        &nbsp; &nbsp;</text>
+    }
+    <b>#News Posts:</b> @assignmentDto.NumberOfNewsItemsOnAssignment &nbsp;&nbsp; <b>Started:</b>
+    @assignmentDto.CreateUpdateDate &nbsp;&nbsp; <b>Expiry Date:</b>
+    @assignmentDto.ExpiryDate
+    <div id="wrapper-div">
+        <div id="two-columns-left-column">
+            @if (@assignmentDto.ImageBlobUri != null)
+            {
+                <img alt="@assignmentDto.Title" src="@assignmentDto.ImageBlobUri" height="300" />
+            }
+            else
+            {
+                <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="300" />
+            }
+            <div class="display-field">
+                <b>@assignmentDto.Description</b>
+            </div>
+            <br />
+        </div>
+        <div id="two-columns-right-column">
+            <div id="map-div">
+                @{
+                    Html.RenderPartial("_MapNewsItemList", Model);
+                }
+            </div>
+        </div>
+    </div>
+    <table style="width: 100%">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="150" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="100" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594, 11.645507812500017/5?mapSize=300,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="150" />
+                    </a>
+                </td>
+                <td style="width: 140px;">
+                    @item.CreateUpdateDate<br />
+                    <br />
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                    <br />
+                    <b>Category: </b>@item.CategoryName<br />
+                    <br />
+                    @if (item.HasVideo)
+                    { <b>Video Post</b>}
+                </td>
+                <td>
+                    <b>@item.Title</b><br />
+                    @Html.Truncate(@item.Story, 550)
+                </td>
+            </tr>
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>

@@ -1,0 +1,138 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "My News";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<fieldset>
+    <legend>
+        @if (@Model.Count() > 0)
+        {
+            <text>My News</text>
+        }
+        else
+        {
+            <text>You have not added any News</text>
+        }
+    </legend>
+    @{Html.RenderPartial("_Pager");}
+    <table style="width: 100%">
+        <tr>
+            <th>
+                Cover Photo
+            </th>
+            <th>
+                Location
+            </th>
+            <th>
+                Data
+            </th>
+            <th>
+                Content
+            </th>
+            <th>
+                Admin
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr id="row-@item.NewsItemID">
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="100" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="100" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594, 11.645507812500017/5?mapSize=300,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="100" />
+                    </a>
+                </td>
+                <td style="width: 140px;">
+                    @item.CreateUpdateDate<br />
+                    <br />
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                </td>
+                <td>
+                    <b>Category: </b>@item.CategoryName &nbsp;&nbsp;
+                    @if (item.HasVideo)
+                    { <b>Video Post</b>}
+                    @if (item.AssignmentID != null)
+                    { <br />
+                        <b>Assignment:</b> @item.AssignmentTitle }
+                    <br />
+                    <br />
+                    <b>@item.Title</b><br />
+                    @Html.Truncate(@item.Story, 150)
+                </td>
+                <td style="width: 140px;">
+                    @Html.ActionLink("Edit News Post", "Edit", new { id = @item.NewsItemID })
+                    <br />
+                    <br />
+                    <button meta:id="@item.NewsItemID" meta:title="@item.Title">
+                        Delete News Post
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    /* Deleting NewsItem. */
+    $('button').click
+    (
+    	function () {
+    	    var title = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Delete News Post "' + title + '"?';
+    	    var doDelete = confirm(confirmMessage);
+
+    	    if (doDelete) {
+    	        var newsItemId = $(this).attr("meta:id");
+
+    	        $.post
+                (
+			        "/News/Delete",
+			        { newsItemId: newsItemId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+                            /* Removing the deleted item. */
+			                $("#row-" + newsItemId).slideUp();
+			                $("#row-" + newsItemId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+</script>

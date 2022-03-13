@@ -1,0 +1,16 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PolygonDto>
+@{
+    ViewBag.Title = "Areas - " + ViewBag.POSTNR_TXT_POSTBYNAVN;
+    Layout = "~/Views/Shared/_LayoutTwoColumnB.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        Areas - @ViewBag.POSTNR_TXT_POSTBYNAVN
+        | @Html.ActionLink("News", "PostalCode", "News", new { id = @ViewBag.POSTNR_TXT }, null)
+        | @Html.ActionLink("Communities", "PostalCode", "Community", new { id = @ViewBag.POSTNR_TXT }, null)
+        | @Html.ActionLink("Users", "PostalCode", "User", new { id = @ViewBag.POSTNR_TXT }, null)
+    </h2>
+}
+@{ IEnumerable<HLWebRole.HLServiceReference.PolygonDto> polygonDtos = Model; Html.RenderPartial("_MapArea", polygonDtos); }
+@{ Html.RenderPartial("_PollingForLatestBreakingNewsFromPostalCodeJavaScript"); }

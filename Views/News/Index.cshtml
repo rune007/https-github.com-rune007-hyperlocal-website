@@ -1,0 +1,45 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "News - Index";
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";    
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        News - Index | @Html.ActionLink("Communities", "Index", "Community")
+        | @Html.ActionLink("Users", "Index", "User")
+        | @Html.ActionLink("Areas", "Index", "Area")</h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_IndexMenu", "GeoNavigationMenu");}
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapNewsItemList", Model);}
+    </div>
+</div>
+
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_NewsItemList", Model);}
+    </ul>
+}
+@*    <div id="left-column">
+        <h1>
+            { Left Sidebar }</h1>
+        <div id="info-div">
+            { InfoDiv }
+        </div>
+        <div id="media-div">
+            { MediaDiv }
+        </div>
+    </div>
+    <div id="right-column">
+        <h1>
+            { Right Sidebar }</h1>
+        <div id="map-div">
+            { MapDiv }
+        </div>
+    </div>*@

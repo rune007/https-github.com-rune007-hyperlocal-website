@@ -1,0 +1,15 @@
+﻿@model HLWebRole.HLServiceReference.PollDto
+<div id="poll-@Model.PollID" class="poll">
+    <h2>@Model.QuestionText</h2>
+    <form action="" method="post">
+    <ul class="poll-options">
+        @foreach (var option in Model.PollOptions)
+        {
+            <li class="option" id="option-@option.PollOptionID">
+                <input type="radio" id="option-@option.PollOptionID" name="post-@Model.PollID" value="@option.PollOptionID" /><label class="text" for="option-@option.PollOptionID"><b>@option.OptionText</b></label></li>
+        }
+    </ul>
+    <button type="submit" name="poll-submit">
+        Vote</button>
+    </form>
+</div>

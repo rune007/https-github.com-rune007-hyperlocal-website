@@ -1,0 +1,29 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "Around Me";
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";   
+    //Getting a reverse geocode address
+    var reverseGeocodeAddress = "";
+    if (ViewBag.ReverseGeocodeAddress != null)
+    {
+        reverseGeocodeAddress = (string)ViewBag.ReverseGeocodeAddress;
+    }    
+}
+@Html.ActionLink("Users Around Me >>", "UserAroundMe", "Search", null, new { @class = "button" })
+@Html.ActionLink("Communities Around Me >>", "CommunityAroundMe", "Search", null, new { @class = "button" })
+<fieldset>
+    @if (reverseGeocodeAddress.Length > 0)
+    {
+        <legend>News around @reverseGeocodeAddress </legend>
+    }
+    else
+    {
+        <legend>News Around Me</legend>
+    }
+    <div id="wrapper-div">
+        @{Html.RenderPartial("_MapNewsItemList", Model);}
+    </div>
+    <ul id="item-list">
+        @{Html.RenderPartial("_NewsItemList", Model);}
+    </ul>
+</fieldset>

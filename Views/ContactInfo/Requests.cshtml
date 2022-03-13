@@ -1,0 +1,178 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.ContactInfoRequestDto>
+@{
+    ViewBag.Title = "Requests";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<div id="one-column">
+    <fieldset>
+        <legend>
+            @if (@Model.Count() > 0)
+            {
+                <text>Contact Info Requests</text>
+            }
+            else
+            {
+                <text>You have no Requests</text>
+            }
+        </legend>
+        @{Html.RenderPartial("_Pager");}
+        <div id="wrapper-div">
+            <table>
+                @if (@Model.Count() > 0)
+                {
+                    <tr>
+                        <th>
+                            From
+                        </th>
+                        <th>
+                        </th>
+                        <th>
+                            Date
+                        </th>
+                        <th>
+                            Accept
+                        </th>
+                        <th>
+                            Reject
+                        </th>
+                    </tr>
+                }
+                else { }
+                @foreach (var item in Model)
+                {
+                    <tr id="row-@item.ContactInfoRequestID">
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = @item.FromUserID })">
+                                @if (item.FromUserPhotoUri != null)
+                                {
+                                    <img alt="@item.FromUserName" src="@item.FromUserPhotoUri" height="30" />
+                                }
+                                else
+                                {
+                                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="30" />
+                                }
+                            </a>
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = @item.FromUserID })">
+                                @Html.DisplayFor(modelItem => item.FromUserName)
+                                @Html.HiddenFor(modelItem => item.FromUserID, new { @class = "from-user-id" })
+                            </a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateDate)
+                        </td>
+                        <td>
+                            <button id="accept-button" meta:id="@item.ContactInfoRequestID" meta:title="@item.FromUserName">
+                                Accept
+                            </button>
+                        </td>
+                        <td style="text-align: center;">
+                            <button id="reject-button" meta:id="@item.ContactInfoRequestID" meta:title="@item.FromUserName">
+                                Reject
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        @{Html.RenderPartial("_Pager");}
+    </fieldset>
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    // Displays the success message through the "system-message" div.
+    function ShowSuccessSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("success");
+        systemMessageDiv.show();
+    }
+
+    /* Accepting a ContactInfoRequest. */
+    $("button#accept-button").click
+    (
+    	function () {
+    	    var fromUserName = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want share Contact Information with ' + fromUserName + '?';
+    	    var status = confirm(confirmMessage);
+
+    	    if (status) {
+    	        var contactInfoRequestId = $(this).attr("meta:id");
+    	        var fromUserId = $("#row-" + contactInfoRequestId + " .from-user-id").val();
+
+    	        $.post
+                (
+			        "/ContactInfo/AcceptRequest",
+			        { contactInfoRequestId: contactInfoRequestId, fromUserId: fromUserId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+			                ShowSuccessSystemMessage('You now Share Contact Information with ' + fromUserName + '!');
+			                /* Removing item.*/
+			                $("#row-" + contactInfoRequestId).slideUp();
+			                $("#row-" + contactInfoRequestId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+
+    /* Rejecting a ContactInfoRequest. */
+    $("button#reject-button").click
+    (
+    	function () {
+    	    var fromUserName = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Reject Sharing Contact Information with ' + fromUserName + '?';
+    	    var status = confirm(confirmMessage);
+
+    	    if (status) {
+    	        var contactInfoRequestId = $(this).attr("meta:id");
+
+    	        $.post
+                (
+			        "/ContactInfo/RejectRequest",
+			        { contactInfoRequestId: contactInfoRequestId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+			                /* Removing item.*/
+			                $("#row-" + contactInfoRequestId).slideUp();
+			                $("#row-" + contactInfoRequestId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+</script>

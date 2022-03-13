@@ -1,0 +1,151 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.MessageDto>
+@{
+    ViewBag.Title = "Outbox";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";      
+}
+<div id="one-column">
+    <fieldset>
+        <legend>
+            @if (@Model.Count() > 0)
+            {
+                <text>Outbox</text>
+            }
+            else
+            {
+                <text>Outbox is empty</text>
+            }
+        </legend>
+        @{Html.RenderPartial("_Pager");}
+        <div id="wrapper-div">
+            <table>
+                @if (@Model.Count() > 0)
+                {
+                    <tr>
+                        <th>
+                            To
+                        </th>
+                        <th>
+                        </th>
+                        <th>
+                            Subject
+                        </th>
+                        <th>
+                            Date
+                        </th>
+                        <th>
+                            <input type="button" value=" Delete Selected " id="btnDelete" />
+                        </th>
+                    </tr>
+                }
+                else { }
+                @foreach (var item in Model)
+                {
+                    <tr id="row-@item.RowKey@item.PartitionKey">
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = Convert.ToInt32(item.PartitionKey) })">
+                                @if (item.ReceiverPhotoUri != null)
+                                {
+                                    <img alt="@item.ReceiverUserName" src="@item.ReceiverPhotoUri" height="30" />
+                                }
+                                else
+                                {
+                                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="30" />
+                                }
+                            </a>
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = Convert.ToInt32(item.PartitionKey) })">
+                                @Html.DisplayFor(modelItem => item.ReceiverUserName)
+                            </a>
+                        </td>
+                        <td>
+                            @*THE PAGENUMBER PARAMETER BELOW IS ACTUALLY NOT A PAGENUMBER PARAMETER! IT IS THE PARTITIONKEY OF THE AZURE TABLE ENTITY! 
+                        The reason for this confusion is that, early on in the development of the project, I mapped the route "DefaultPaging" in the 
+                        Global.asax.cs file, I mapped this route to support pagination. Later in the project I got the need to support this Details 
+                        view to Azure table storage entities, and the Azure table entity is identified by both a PartitionKey and a RowKey. The route 
+                        "DefaultPaging" was actually ok for me to use for the Azure table entity Details view, the only problem was the name of the parameter 
+                        "pageNumber". It was too cumbersome to change the name of the parameter at this later stage. Because I used it in a lot of action methods 
+                        and links around the application. I should have chosen a more general name than "pageNumber", e.g. "identifier", when I originally mapped 
+                        the route. Because the route is ok for my purpose, it' only the name of the parameter which is too specific.*@
+                            <a href="@Url.Action("Details", "Message", new { id = @item.RowKey, pageNumber = @item.PartitionKey, })">
+                                @Html.Truncate(item.Subject, 50)
+                            </a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateDate)
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" id="@item.RowKey" meta:id="@item.PartitionKey"/>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        @{Html.RenderPartial("_Pager");}
+    </fieldset>
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    // Deletes selected messages.
+    $("#btnDelete").click
+    (
+        function () {
+            var checked = $(':checkbox:checked');
+
+            if (checked.length > 0) {
+                var confirmMessage = 'Are you sure you want to delete the selected message?';
+                if (checked.length > 1)
+                    confirmMessage = 'Are you sure you want to delete the selected messages?';
+
+                var doDelete = confirm(confirmMessage);
+
+                if (doDelete) {
+                    $.each
+                    (
+                        checked,
+                        function (i, currentItem) {
+                            var rowKey = currentItem.id;
+                            var partitionKey = jQuery(currentItem).attr("meta:id");
+
+                            $.post
+                            (
+			                    "/Message/DeleteMessageOutbox",
+			                    { partitionKey: partitionKey, rowKey: rowKey },
+			                    function (data) {
+			                        // Hiding eventual old error messages.
+			                        systemMessageDiv.hide();
+
+			                        if (data != null) {
+			                            // In case of error we show an error message.
+			                            if (data.SystemMessage != null) {
+			                                ShowSystemMessage(data.SystemMessage);
+			                                return;
+			                            }
+                                        /* Removing the item. */
+			                            $("#row-" + rowKey.toString() + partitionKey.toString()).slideUp();
+			                            $("#row-" + rowKey.toString() + partitionKey.toString()).remove();
+			                        }
+			                    },
+			                    "json"
+		                     );
+                        }
+                    );
+                }
+            }
+        }
+    );
+
+</script>

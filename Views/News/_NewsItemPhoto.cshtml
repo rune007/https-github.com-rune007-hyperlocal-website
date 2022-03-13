@@ -1,0 +1,19 @@
+﻿@*Displays the photos pertaining to a news item.*@
+@model HLWebRole.Models.NewsItemModel
+@if (Model.Photos != null)
+{
+    foreach (var p in Model.Photos)
+    {
+        /* If there is only one photo, we just display one big photo*/
+        if (Model.Photos.Count() == 1)
+        {
+    <img alt="@HttpUtility.HtmlAttributeEncode(@p.Caption)" src="@p.BlobUri" width="500" />
+        }
+        /* Making use of the lightbox image viewer plugin. */
+        else
+        {                      
+    <a href="@p.BlobUri" rel="lightbox[myGroup]" title="@HttpUtility.HtmlAttributeEncode(@p.Caption)">
+        <img alt="@HttpUtility.HtmlAttributeEncode(@p.Caption)" src="@p.BlobUri" height="70" /></a>
+        }
+    }
+}

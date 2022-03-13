@@ -1,0 +1,320 @@
+﻿@model HLWebRole.Models.NewsItemModel
+<div id="two-columns-same-size-left">
+    @if (Model.Photos != null)
+    {
+        <text><h3>
+            Photos:</h3></text>
+        <ul id="photo-list" class="manage-photos">
+            @foreach (var p in Model.Photos)
+            {
+                <li id="mediaId-@p.MediaID" class="photo">
+                    <input type="hidden" class="photoUri" value="@p.MediumSizeBlobUri">
+                    <img alt="@HttpUtility.HtmlAttributeEncode(@p.Caption)" src="@p.MediumSizeBlobUri" height="70" />
+                    <span class="text">@HttpUtility.HtmlAttributeEncode(p.Caption)</span>
+                    <button type="button" class="edit-photo-button" meta:id="@p.MediaID">
+                        Edit</button>&nbsp;
+                    <button type="button" class="delete-photo-button" meta:id="@p.MediaID">
+                        Delete</button></li>
+
+            }
+        </ul>
+    }
+</div>
+<div id="two-columns-same-size-right">
+    @if (Model.Videos != null)
+    {
+        <text><h3>
+            Videos:</h3></text>
+        <ul id="videoList" class="manage-videos">
+            @foreach (var v in Model.Videos)
+            {
+                <li id="mediaId-@v.MediaID" class="video">
+                    <input type="hidden" class="videoUri" value="@v.BlobUri">
+                    @Video.MediaPlayer(path: v.BlobUri,
+                width: "100",
+                height: "150",
+                autoStart: false,
+                playCount: 1,
+                uiMode: "full",
+                stretchToFit: true,
+                enableContextMenu: false,
+                mute: false,
+                volume: 75)
+                    <span class="text">@HttpUtility.HtmlAttributeEncode(v.Title)</span>
+                    <button type="button" class="edit-video-button" meta:id="@v.MediaID">
+                        Edit</button>&nbsp;
+                    <button type="button" class="delete-video-button" meta:id="@v.MediaID">
+                        Delete</button></li>
+            }
+        </ul>
+    }
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    var mediaProcessingGif = $("#mediaProcessingGif");
+    mediaProcessingGif.hide();
+
+    /* This flag tell us whether Uploadify has any files to upload, in case of a file is added to Uploadify's queue of files to upload, the
+    'onSelectOnce' event will be fired and set the noFilesToUpload flag to false. */
+    var noFilesToUpload = true;
+    var newsItemId;
+
+    $(window).load(
+
+    function () {
+        $("#fileuploader").uploadify({
+            'uploader': '@Url.Content("/Scripts/uploadify/uploadify.swf")',
+            'cancelImg': '/Scripts/uploadify/cancel.png',
+            'buttonText': 'Browse For Files',
+            'script': '@Url.Action("Upload")',
+            'folder': '/uploads',
+            'scriptData': { 'hostItemId': newsItemId },
+            'onAllComplete': function (event, data) { window.location = "/News/" + newsItemId; },
+            'onError': function (a, b, c, d) {
+                if (d.type === "File Size")
+                    alert("The File: " + c.name + " Violates the File Size Limit, which is: " + Math.round(d.info / (1024 * 1024)) + "MB, Please Remove the File!")
+            },
+            'onSelectOnce': function (event, data) { noFilesToUpload = false; },
+            'fileDesc': 'Media Files',
+            'fileExt': '*.jpg;*.jpeg;*.gif;*.png;*.avi;*.flv;*.mov;*.mpg;*.mp4;*.m4v;*.wmv;*.3gp',
+            'sizeLimit': 27000000,
+            'multi': true,
+            'auto': false
+        });
+
+        $("#btnSave").click
+        (
+            function () {
+                /* Because we are posting the form asynchronously we need to enforce validation with the code just below. */
+                var isFormValid = $('form').validate().form();
+                if (isFormValid) {
+                    var url = $("form").attr("action");
+                    var inputData = $("form").serialize();
+                    mediaProcessingGif.show();
+                    $.post(url, inputData, function (data) {
+                        // Hiding eventual old error messages.
+                        systemMessageDiv.hide();
+
+                        if (data != null) {
+
+                            // In case of error we show an error message.
+                            if (data.SystemMessage != null) {
+                                ShowSystemMessage(data.SystemMessage);
+                                mediaProcessingGif.hide();
+                                return;
+                            }
+
+                            newsItemId = data.NewsItemID;
+                            $('#fileuploader').uploadifySettings("scriptData", { 'hostItemId': newsItemId });
+                            $('#fileuploader').uploadifyUpload();
+                            /* The noFilesToUpload flag determines how we are being redirected to the Details view after processing form input.
+                            If noFilesToUpload is false, we are being redirected to the Details view, via Uploadify's onAllComplete event.
+                            If noFilesToUpload is true, we are being redirected to the Details view via the code just below. */
+                            if (noFilesToUpload) {
+                                if (newsItemId != null) {
+                                    window.location = "/News/" + newsItemId;
+                                }
+                            }
+                        };
+                    });
+                }
+            }
+        );
+    }
+);
+
+
+    /* Edits a Photo. */
+    function EditPhoto() {
+        var mediaId = $(this).attr("meta:id"),
+		photo = $("#mediaId-" + mediaId),
+		photoCaption = photo.find(".text").text();
+        photoUri = photo.find(".photoUri").val();
+
+        // hide all the children.	
+        photo.children().hide();
+
+        var editPhotoForm = $("<span class=\"field\">"
+        // The line below is the markup which constitutes the photo:
+        + "<img alt=\"" + photoCaption + "\" src=\"" + photoUri + "\" height=\"70\" />"
+        + " <input type=\"text\" id=\"text-" + mediaId + "\" class=\"edit-text\" value=\"" + photoCaption + "\" />"
+        + "<button type=\"button\" class=\"update\" meta:id=\"" + mediaId + "\">Update</button>&nbsp;<button type=\"button\" class=\"cancel\">Cancel</button></span>");
+
+        // Update the form.
+        editPhotoForm.find(".update").click(function () {
+            var mediaId = $(this).attr("meta:id"),
+			photoCaptionText = $(this).prevAll(".edit-text").val();
+
+            $.post(
+			"/News/EditPhotoCaption",
+			{ mediaId: mediaId, photoCaptionText: photoCaptionText },
+			function (data) {
+
+			    systemMessageDiv.hide();
+
+			    if (data.SystemMessage != null) {
+			        ShowSystemMessage(data.SystemMessage);
+			    }
+
+			    editPhotoForm.remove();
+			    photo.children(".text").text(data.Caption);
+			    photo.children().show();
+			},
+			"json"
+		);
+        });
+
+        // Cancel the update.
+        editPhotoForm.find(".cancel").click(function () {
+            $(this).parents(".photo").children(":hidden").show();
+            editPhotoForm.remove();
+        });
+
+        // Add the form to the current item.
+        photo.append(editPhotoForm);
+
+        return false;
+    }
+    $(".edit-photo-button").click(EditPhoto);
+
+
+    /* Deletes a Photo. */
+    function DeletePhoto() {
+        var mediaId = $(this).attr("meta:id");
+        photo = $("#mediaId-" + mediaId),
+		photoCaption = photo.find(".text").text();
+
+        var doDelete = confirm("Are you sure you want to delete the photo " + photoCaption + "?");
+
+        if (doDelete) {
+            $.post
+            (
+		        "/News/DeleteMedia",
+		        { mediaId: mediaId },
+		        function (data) {
+		            systemMessageDiv.hide();
+
+		            if (data.SystemMessage != null) {
+		                ShowSystemMessage(data.SystemMessage);
+		            }
+
+		            $("#mediaId-" + data.MediaID).fadeOut("slow", function () { $(this).remove() });
+		        },
+		        "json"
+	        );
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+    $(".delete-photo-button").click(DeletePhoto);
+
+
+
+    /* Edits a Video. */
+    function EditVideo() {
+        var mediaId = $(this).attr("meta:id"),
+		video = $("#mediaId-" + mediaId),
+		videoTitle = video.find(".text").text();
+        videoUri = video.find(".videoUri").val();
+
+        // hide all the children	
+        video.children().hide();
+
+        var editVideoForm = $("<span class=\"field\">"
+        //  The 9 lines below is the markup which constitutes the Video.MediaPlayer: 
+        + "<object classid=\"clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6\" height=\"150\" width=\"100\" >"
+        + "<param name=\"URL\" value=\"" + videoUri + "\" />"
+        + "<param name=\"autoStart\" value=\"False\" />"
+        + "<param name=\"uiMode\" value=\"full\" />"
+        + "<param name=\"stretchToFit\" value=\"True\" />"
+        + "<param name=\"enableContextMenu\" value=\"False\" />"
+        + "<param name=\"volume\" value=\"75\" />"
+        + "<embed src=\"" + videoUri + "\" width=\"100\" height=\"150\" type=\"application/x-mplayer2\" autoStart=\"False\" uiMode=\"full\" stretchToFit=\"True\" enableContextMenu=\"False\" volume=\"75\" />"
+        + "</object>"
+        + "<input type=\"text\" id=\"text-" + mediaId + "\" class=\"edit-text\" value=\"" + videoTitle + "\" />"
+        + "<button type=\"button\" class=\"update\" meta:id=\"" + mediaId + "\">Update</button>&nbsp;<button type=\"button\" class=\"cancel\">Cancel</button></span>");
+
+        // update the form
+        editVideoForm.find(".update").click(function () {
+            var mediaId = $(this).attr("meta:id"),
+			videoTitleText = $(this).prevAll(".edit-text").val();
+
+            $.post(
+			"/News/EditVideoTitle",
+			{ mediaId: mediaId, videoTitleText: videoTitleText },
+			function (data) {
+			    systemMessageDiv.hide();
+
+			    if (data.SystemMessage != null) {
+			        ShowSystemMessage(data.SystemMessage);
+			    }
+
+			    editVideoForm.remove();
+			    video.children(".text").text(data.Title);
+			    video.children().show();
+			},
+			"json"
+		);
+        });
+
+        // cancel the update
+        editVideoForm.find(".cancel").click(function () {
+            $(this).parents(".video").children(":hidden").show();
+            editVideoForm.remove();
+        });
+
+        // add the form to the current comment
+        video.append(editVideoForm);
+
+        return false;
+    }
+    $(".edit-video-button").click(EditVideo);
+
+
+    /* Deletes a Video. */
+    function DeleteVideo() {
+        var mediaId = $(this).attr("meta:id");
+        video = $("#mediaId-" + mediaId),
+		videoTitle = video.find(".text").text();
+
+        var doDelete = confirm("Are you sure you want to delete the video " + videoTitle + "?");
+
+        if (doDelete) {
+            $.post
+            (
+		        "/News/DeleteMedia",
+		        { mediaId: mediaId },
+		        function (data) {
+		            systemMessageDiv.hide();
+
+		            if (data.SystemMessage != null) {
+		                ShowSystemMessage(data.SystemMessage);
+		            }
+
+		            $("#mediaId-" + data.MediaID).fadeOut("slow", function () { $(this).remove() });
+		        },
+		        "json"
+	        );
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+    $(".delete-video-button").click(DeleteVideo);
+
+</script>

@@ -1,0 +1,170 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.AssignmentDto>
+@{
+    ViewBag.Title = "My Assignments";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<fieldset>
+    @Html.ActionLink("Create New Assignment >>", "Create", "Assignment", null, new { @class = "button" })
+    &nbsp;|&nbsp;
+    @Html.ActionLink("Create New Geo Temporal Assignment >>", "CreateGeoTemporal", "Assignment", null, new { @class = "button" })
+    <legend>
+        @if (@Model.Count() > 0)
+        {
+            <text>My Assignments</text>
+        }
+        else
+        {
+            <text>You have no assignments</text>
+        }
+    </legend>
+    @{Html.RenderPartial("_Pager");}
+    <table style="width: 100%;">
+        <tr>
+            <th>
+                Foto
+            </th>
+            <th>
+                Latest Activity Spot
+            </th>
+            <th>
+                Title/Latest Activity
+            </th>
+            <th>
+                #News Items
+            </th>
+            <th>
+                Created/Expires
+            </th>
+            <th>
+                Admin
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr id="row-@item.AssignmentID">
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.AssignmentID })">
+                        @if (item.MediumSizeBlobUri != null)
+                        {
+                            <img alt="@item.Title" src="@item.MediumSizeBlobUri" height="100" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="100" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                        @if (item.LatestNewsLatitude != null)
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+                11.645507812500017/5?mapSize=300,200&pp=@item.LatestNewsLatitude,@item.LatestNewsLongitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="100" />
+                        }
+                        else
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+            11.645507812500017/5?mapSize=300,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="100" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                        @Html.DisplayFor(modelItem => item.Title)
+                        @if (item.AssignmentCenterAddress != null)
+                        {
+                            <br />
+                            <text>@@</text>@item.AssignmentCenterAddress
+                            <text>&nbsp;within a radius of&nbsp;</text>@item.AssignmentRadius <text>km</text>                   
+                        }
+                        @if (item.LatestActivityToString != null)
+                        {
+                            <br />
+                            <br />@Html.DisplayFor(modelItem => item.LatestActivityToString)
+                        }
+                    </a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NumberOfNewsItemsOnAssignment)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreateUpdateDate)
+                    <br />
+                    <br />
+                    @if (!item.IsExpired)
+                    {
+                        @Html.DisplayFor(modelItem => item.ExpiryDate)                 
+                    }
+                    else
+                    {
+                        <div style="color: red;">
+                            Expired:&nbsp;@Html.DisplayFor(modelItem => item.ExpiryDate)
+                        </div>
+                    }
+                </td>
+                <td>
+                    @Html.ActionLink("Edit Assignment", "Edit", new { id = @item.AssignmentID })
+                    <br />
+                    <br />
+                    <button meta:id="@item.AssignmentID" meta:title="@item.Title">
+                        Delete Assignment
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    /* Deleting Assignment. */
+    $('button').click
+    (
+    	function () {
+    	    var assignmentTitle = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Delete Assignment "' + assignmentTitle + '"?';
+    	    var doDelete = confirm(confirmMessage);
+
+    	    if (doDelete) {
+    	        var assignmentId = $(this).attr("meta:id");
+
+    	        $.post
+                (
+			        "/Assignment/Delete",
+			        { assignmentId: assignmentId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+			                /* Removing item.*/
+			                $("#row-" + assignmentId).slideUp();
+			                $("#row-" + assignmentId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+</script>

@@ -1,0 +1,149 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.MessageDto>
+@{
+    ViewBag.Title = "Inbox";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<div id="one-column">
+    <fieldset>
+        <legend>
+            @if (@Model.Count() > 0)
+            {
+                <text>Inbox</text>
+            }
+            else
+            {
+                <text>Inbox is empty</text>
+            }
+        </legend>
+        @{Html.RenderPartial("_Pager");}
+        <div id="wrapper-div">
+            <table>
+                @if (@Model.Count() > 0)
+                {
+                    <tr>
+                        <th>
+                            From
+                        </th>
+                        <th>
+                        </th>
+                        <th>
+                            Subject
+                        </th>
+                        <th>
+                            Date
+                        </th>
+                        <th>
+                            <input type="button" value=" Delete Selected " id="btnDelete" />
+                        </th>
+                    </tr>
+                }
+                else { }
+                @foreach (var item in Model)
+                {
+                    <tr id="row-@item.RowKey">
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = @item.SenderUserID })">
+                                @if (item.SenderPhotoUri != null)
+                                {
+                                    <img alt="@item.SenderUserName" src="@item.SenderPhotoUri" height="30" />
+                                }
+                                else
+                                {
+                                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="30" />
+                                }
+                            </a>
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Details", "User", new { id = @item.SenderUserID })">
+                                @Html.DisplayFor(modelItem => item.SenderUserName)
+                            </a>
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Read", "Message", new { id = @item.RowKey })">
+                                @if (item.IsRead)
+                                {                            
+                                   @Html.Truncate(item.Subject, 50)
+                                }
+                                else
+                                {
+                                    <div style="color:Black;"><b>@Html.Truncate(item.Subject, 50)</b></div>
+                                }
+                            </a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateDate)
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" id="@item.RowKey" />
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        @{Html.RenderPartial("_Pager");}
+    </fieldset>
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    // Deletes selected messages.
+    $("#btnDelete").click
+    (
+        function () {
+            var checked = $(':checkbox:checked');
+
+            if (checked.length > 0) {
+                var confirmMessage = 'Are you sure you want to delete the selected message?';
+                if (checked.length > 1)
+                    confirmMessage = 'Are you sure you want to delete the selected messages?';
+
+                var doDelete = confirm(confirmMessage);
+
+                if (doDelete) {
+                    $.each
+                    (
+                        checked,
+                        function (i, currentItem) {
+                            var rowKey = currentItem.id;
+
+                            $.post
+                            (
+			                    "/Message/DeleteMessageInbox",
+			                    { rowKey: rowKey },
+			                    function (data) {
+			                        // Hiding eventual old error messages.
+			                        systemMessageDiv.hide();
+
+			                        if (data != null) {
+			                            // In case of error we show an error message.
+			                            if (data.SystemMessage != null) {
+			                                ShowSystemMessage(data.SystemMessage);
+			                                return;
+			                            }
+                                        /* Removing item */
+			                            $("#row-" + rowKey.toString()).slideUp();
+			                            $("#row-" + rowKey.toString()).remove();
+			                        }
+			                    },
+			                    "json"
+		                     );
+                        }
+                    );
+                }
+            }
+        }
+    );
+
+</script>

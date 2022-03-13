@@ -1,0 +1,29 @@
+﻿@*Links to more Polls for the respective area*@
+@model HLWebRole.HLServiceReference.PollDto
+<div id="right-sidebar">
+    <div id="current-poll" class="boxed">
+        @*    The system supports 5 types of Polls: 
+    1. Country, 2. Region, 3. Municipality, 4. Postal Code, 5. Community*@
+        @if (Model.PollTypeID == 1)
+        {
+            @Html.ActionLink("More Polls >>", "Danmark", "Poll", null, new { @class = "button" })
+        }
+        @if (Model.PollTypeID == 2)
+        {
+            @Html.ActionLink("More Polls >>", "Region", "Poll", new { id = @Model.AreaIdentifier }, new { @class = "button" })
+        }
+        @if (Model.PollTypeID == 3)
+        {
+            @Html.ActionLink("More Polls >>", "Municipality", "Poll", new { id = @Model.AreaIdentifier }, new { @class = "button" })
+        }
+        @if (Model.PollTypeID == 4)
+        {
+            @Html.ActionLink("More Polls >>", "PostalCode", "Poll", new { id = @Model.AreaIdentifier }, new { @class = "button" })
+        }
+        @if (Model.PollTypeID == 5)
+        {
+            var communityId = HlUtility.ExtractIdFromAreaIdentifier(Model.AreaIdentifier);
+            @Html.ActionLink("More Polls >>", "Community", "Poll", new { id = communityId }, new { @class = "button" })
+        }
+    </div>
+</div>

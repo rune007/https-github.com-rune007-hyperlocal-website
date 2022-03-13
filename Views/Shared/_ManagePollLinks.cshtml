@@ -1,0 +1,16 @@
+﻿@*Links for the creator of a Community Poll which enables them to edit or delete the Poll.*@
+@model HLWebRole.HLServiceReference.PollDto
+@{
+    var userId = Convert.ToInt32(Session["userId"]);
+}
+@*Making sure only the User who have added the Poll have access to the edit/delete links.*@
+@if (Model.AddedByUserID == userId)
+{
+    <text><b>Created/Updated:</b></text><br />
+    @Model.CreateUpdateDate<br />
+    @Html.ActionLink("Edit Poll", "Edit", new { id = Model.PollID })
+    <text>&nbsp;&nbsp;</text>  
+    <button class="delete-button" meta:id="@Model.PollID" meta:title="@Model.QuestionText" >
+        Delete Poll
+    </button>
+}

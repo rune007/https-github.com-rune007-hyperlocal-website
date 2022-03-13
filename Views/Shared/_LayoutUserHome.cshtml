@@ -1,0 +1,29 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutBase.cshtml";
+    var userId = HttpContext.Current.Session["userId"];
+    var numberOfUnreadMessagesString = Html.Action("GetNumberOfUnreadMessages", "Message");
+    var numberOfContactInfoRequestsString = Html.Action("GetNumberOfContactInfoRequests", "ContactInfo");
+}
+<nav>
+    <ul id="menu">
+        <li>@Html.ActionLink("Inbox" + numberOfUnreadMessagesString, "Inbox", "Message")</li>
+        <li>@Html.ActionLink("Outbox", "Outbox", "Message")</li>
+        <li>@Html.ActionLink("Requests" + numberOfContactInfoRequestsString, "Requests", "ContactInfo")</li>
+        <li>@Html.ActionLink("Contacts", "MyContacts", "ContactInfo")</li>
+        <li>@Html.ActionLink("Notifications", "Edit", "Notification")</li>
+        <li>@Html.ActionLink("Following", "Followed", "Community")</li>
+        <li>@Html.ActionLink("News Posts", "MyNews", "News")</li>
+        <li>@Html.ActionLink("Communities", "MyCommunities", "Community")</li>
+        @if (HttpContext.Current.User.IsInRole("Editor"))
+        {
+            <li>@Html.ActionLink("Assignments", "MyAssignments", "Assignment")</li>
+            <li>@Html.ActionLink("Polls", "Editor", "Poll")</li>
+        }
+        <li>@Html.ActionLink("Profile", "Details", "User", new { id = userId }, null)</li>
+    </ul>
+</nav>
+<br />
+@Html.Partial("_SystemMessage")
+<div id="system-message">
+</div>
+@RenderBody()

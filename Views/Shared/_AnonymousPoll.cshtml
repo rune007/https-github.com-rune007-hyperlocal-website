@@ -1,0 +1,111 @@
+﻿@model HLWebRole.HLServiceReference.PollDto
+<div id="right-sidebar">
+    <div id="current-poll" class="boxed">
+        <h2 class="title">
+            @Model.UiAreaIdentifier Poll</h2>
+        <div class="content">
+            @if (Model != null && Request.Cookies["poll_" + Model.PollID] == null)
+            {
+                Html.RenderPartial("_PollItem", Model);
+            }
+            else
+            {
+                Html.RenderPartial("_PollResultItem", Model);
+            }
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    $(".poll form").submit(function () {
+        var selection = $(this).find(":checked").val();
+
+        if (selection != undefined) {
+            $.post(
+			"/Poll/VoteAnonymousPoll",
+			{ optionId: selection },
+			function (data, textStatus) {
+
+			    // Hiding eventual old error messages.
+			    systemMessageDiv.hide();
+
+			    // In case of error we show an error message.
+			    if (data.SystemMessage != null) {
+			        ShowSystemMessage(data.SystemMessage);
+			        return;
+			    }
+
+			    SetCookie("poll_" + data.PollID, selection, 30);
+			    // Render the poll for the given data.
+			    RenderPoll($("#poll-" + data.PollID), data);
+			},
+			"json"
+		);
+        }
+        return false;
+    });
+
+
+    function RenderPoll(obj, data) {
+        var poll = $(obj),
+		total = 0,
+		item, percentValue, rightValue, leftValue;
+
+        // Clears all child nodes.
+        poll.empty();
+        poll.append("<h2>" + data.QuestionText + "</h2>");
+        poll.append("<ul class=\"poll-options\">");
+
+        // Counting the collective number of votes thrown.
+        for (var i = 0; i < data.PollOptions.length; i++) {
+            item = data.PollOptions[i];
+            total += item.Votes;
+        }
+
+        // Go through each PollOption and render it.
+        for (var i = 0; i < data.PollOptions.length; i++) {
+            item = data.PollOptions[i];
+            percentValue = Math.round(item.Votes / total * 100);
+
+            poll.append("<li class=\"option\" id=\"option-" + item.OptionID + "\">"
+		+ "<h3>" + item.OptionText + "</h3>"
+		+ "<div class=\"graph\"><img src=\"/Content/images/poll-graph.gif\" height=\"10\" width=\"" + percentValue + "%\" /></div>"
+		+ "<div class=\"values\">" + percentValue + "% (" + item.Votes + " votes)</div>"
+		+ "</li>");
+        }
+
+        poll.append("</ul>");
+        poll.append("<div class=\"total\">There are " + total + " total votes for this poll.</div>");
+    }
+
+
+    /************************************************************************************************************
+    * Set Cookies
+    ***********************************************************************************************************/
+
+    function SetCookie(cookieName, cookieValue, nDays) {
+
+        var today = new Date(),
+		expire = new Date();
+
+        if (nDays == null || nDays == 0)
+            nDays = 1;
+
+        expire.setTime(today.getTime() + 3600000 * 24 * nDays);
+        document.cookie = cookieName + "=" + escape(cookieValue) + ";expires=" + expire.toGMTString() + ";path=/";
+    }
+
+</script>

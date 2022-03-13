@@ -1,0 +1,287 @@
+﻿@model HLWebRole.Models.PollModel
+@{
+    ViewBag.Title = "Edit Poll";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+    var communityName = ViewBag.CommunityName;
+    var communityPhoto = ViewBag.CommunityPhoto;
+}
+<h2>
+    Edit Poll</h2>
+<div id="one-column">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true)
+        <fieldset>
+            <legend>Enter Poll Information for @Model.IdentityMessage
+            @if (Model.PollTypeID == 5)
+            {
+                if (communityPhoto != null)
+                {
+                    <img alt="@communityName" src="@communityPhoto" height="50" />
+                }
+                else
+                {
+                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="50" />
+                }
+            }
+            </legend>
+            @Html.HiddenFor(model => model.PollID)
+            @Html.HiddenFor(model => model.AddedByUserID)
+            @Html.HiddenFor(model => model.AreaIdentifier)
+            @Html.HiddenFor(model => model.ArchivedDate)
+            @Html.HiddenFor(model => model.PollTypeID)
+            <div class="editor-label">
+                <h2>
+                    @Html.LabelFor(model => model.QuestionText)</h2>
+            </div>
+            <div class="medium-textbox" id="medium-textbox">
+            </div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.QuestionText)
+                @Html.ValidationMessageFor(model => model.QuestionText)
+            </div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.IsCurrent)
+                @Html.LabelFor(model => model.IsCurrent)
+                @Html.ValidationMessageFor(model => model.IsCurrent)
+            </div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.IsArchived)
+                @Html.LabelFor(model => model.IsArchived)
+                @Html.ValidationMessageFor(model => model.IsArchived)
+            </div>
+            <p>
+                <input type="submit" value="Save Changes" />
+            </p>
+            <br />
+            <h2>
+                Poll Options:</h2>
+            @if (Model.PollOptions != null)
+            {
+                <ul id="poll-options" class="manage-options">
+                    @foreach (var option in Model.PollOptions)
+                    {
+                        <li id="option-@option.PollOptionID" class="option"><span class="text">@option.OptionText</span>
+                            <button type="button" class="edit-option-button" meta:id="@option.PollOptionID">
+                                Edit</button>&nbsp;
+                            <button type="button" class="delete-option-button" meta:id="@option.PollOptionID">
+                                Delete</button></li>
+                    }
+                </ul>
+            }
+            <br />
+            <div class="editor-label">
+                <h2>
+                    @Html.Label("New Poll Option:")
+                </h2>
+            </div>
+            <div class="text-box">
+                @Html.TextBox("optionText")
+            </div>
+            <br />
+            <div class="field-validation-error" id="create-poll-option-error-message">
+                You need to enter some text to create a poll option!
+            </div>
+            <div class="editor-field">
+                <input type="button" value="Create Poll Option" id="btnOptionCreate" />
+            </div>
+        </fieldset>
+    }
+</div>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    // A poll cannot be current and archived at the same time and vice versa.
+    // The code below makes IsArchived not checked if IsCurrent is checked and vice versa.
+    $("#IsCurrent").click(IsCurrentCheckboxChecked);
+    function IsCurrentCheckboxChecked() {
+        $("#IsArchived").removeAttr('checked');
+    }
+
+    $("#IsArchived").click(IsArchivedCheckboxChecked);
+    function IsArchivedCheckboxChecked() {
+        $("#IsCurrent").removeAttr('checked');
+    }
+
+
+    /* Edits a poll option. */
+    function EditPollOption() {
+        var id = $(this).attr("meta:id"),
+		option = $("#option-" + id),
+		text = option.find(".text").text();
+
+        // hide all the children	
+        option.children().hide();
+
+        var optionForm = $("<span class=\"field\"><input type=\"text\" id=\"text-" + id + "\" class=\"edit-text\" value=\"" + text + "\" /> <button type=\"button\" class=\"update\" meta:id=\"" + id + "\">Update</button>&nbsp;<button type=\"button\" class=\"cancel\">Cancel</button></span>");
+
+        optionFormTextbox = optionForm.find("#text-" + id);
+
+        /* Validation logic for the update poll option text box, removes the validation errors when the user types something into the text box. */
+        optionFormTextbox.keyup(function () {
+            errorMessage.remove();
+            optionFormTextbox.removeClass("input-validation-error");
+        });
+
+        var errorMessage = $("<span id=\"edit-error\" class=\"field-validation-error\"> &nbsp;  The poll option has to have some text!</span>");
+
+        // update the form
+        optionForm.find(".update").click(function () {
+            var pollOptionId = $(this).attr("meta:id"),
+			optionText = $(this).prevAll(".edit-text").val();
+
+            /* Validation logic for clicking the update poll option button, we don't allow an option text which is empty. */
+            if (optionText.length == 0) {
+                optionFormTextbox.addClass("input-validation-error")
+                optionForm.append(errorMessage);
+                optionForm.show();
+                return;
+            }
+
+            $.post(
+			"/Poll/EditPollOption",
+			{ pollOptionId: pollOptionId, optionText: optionText },
+			function (data) {
+
+			    // Hiding eventual old error messages.
+			    systemMessageDiv.hide();
+
+			    // In case of error we show an error message.
+			    if (data.SystemMessage != null) {
+			        ShowSystemMessage(data.SystemMessage);
+			        return;
+			    }
+
+			    optionForm.remove();
+			    option.children(".text").text(data.OptionText);
+			    option.children().show();
+			},
+			"json"
+		);
+        });
+
+        // cancel the update
+        optionForm.find(".cancel").click(function () {
+            $(this).parents(".option").children(":hidden").show();
+            optionForm.remove();
+        });
+
+        // add the form to the current comment
+        option.append(optionForm);
+
+        return false;
+    }
+
+    $(".edit-option-button").click(EditPollOption);
+
+
+    /* Deletes a poll option. */
+    function DeletePollOption() {
+        var pollOptionId = $(this).attr("meta:id");
+
+        var doDelete = confirm("Are you sure you want to delete the option?");
+
+        if (doDelete) {
+            $.post
+            (
+		        "/Poll/DeletePollOption",
+		        { pollOptionId: pollOptionId },
+		        function (data) {
+
+		            // Hiding eventual old error messages.
+		            systemMessageDiv.hide();
+
+		            // In case of error we show an error message.
+		            if (data.SystemMessage != null) {
+		                ShowSystemMessage(data.SystemMessage);
+		                return;
+		            }
+
+		            $("#option-" + data.PollOptionID).fadeOut("slow", function () { $(this).remove() });
+		        },
+		        "json"
+	        );
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+
+    $(".delete-option-button").click(DeletePollOption);
+
+
+    /* Validation logic for creating new poll option, grabs a hold of the create-poll-option-error-message and hides it. */
+    var optionCreateErrorMessage = $("#create-poll-option-error-message");
+    optionCreateErrorMessage.hide();
+
+    /* Validation logic for creating new poll option, removes the validation errors when the user types something into the text box. */
+    $("#optionText").keyup(function () {
+        optionCreateErrorMessage.hide();
+        $("#optionText").removeClass("input-validation-error");
+    });
+
+
+    /* Function processing the data which was returned from the post request to "/Poll/CreatePollOption". */
+    function CreatePollOptionSuccess(data) {
+
+        var optionItem = $("<li id=\"option-" + data.PollOptionID + "\" class=\"option\"><span class=\"text\">" + data.OptionText + "</span> <button type=\"button\" class=\"edit-option-button\" meta:id=\"" + data.PollOptionID + "\">Edit</button>&nbsp;<button type=\"button\" class=\"delete-option-button\" meta:id=\"" + data.PollOptionID + "\">Delete</button></li>");
+
+        $("#option").val("");
+
+        optionItem.appendTo("#poll-options");
+
+        optionItem.find(".edit-option-button").click(EditPollOption);
+        optionItem.find(".delete-option-button").click(DeletePollOption);
+
+        // clear the option box
+        $("#optionText").val("");
+    }
+
+
+    /* Creating a new poll option by clicking the button btnOptionCreate. */
+    $("#btnOptionCreate").click(function () {
+
+        var optionText = $("#optionText").val(),
+		pollId = $("#PollID").val();
+
+        /* Validation logic for creating poll option, we don't allow the user to create a poll option with no text. */
+        if (optionText.length == 0) {
+            optionCreateErrorMessage.show();
+            $("#optionText").addClass("input-validation-error");
+            return;
+        }
+
+        $.post(
+		"/Poll/CreatePollOption",
+		{ pollId: pollId, optionText: optionText },
+        function (data, textStatus) {
+
+            // Hiding eventual old error messages.
+            systemMessageDiv.hide();
+
+            // In case of error we show an error message.
+            if (data.SystemMessage != null) {
+                ShowSystemMessage(data.SystemMessage);
+                return;
+            }
+
+            CreatePollOptionSuccess(data);
+        },
+		"json"
+	);
+        return false;
+    });
+
+</script>

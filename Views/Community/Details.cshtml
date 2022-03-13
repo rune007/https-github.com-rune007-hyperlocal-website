@@ -1,0 +1,68 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{    
+    var communityDto = (HLWebRole.HLServiceReference.CommunityDto)ViewBag.CommunityDto;
+    ViewBag.Title = "News: " + communityDto.Name;
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    var communityId = communityDto.CommunityID;
+    var addedByUserId = communityDto.AddedByUserID;
+    var addedByUserFullName = communityDto.AddedByUserFullName;
+    var numberOfUsersInCommunity = communityDto.NumberOfUsersInCommunity;
+}
+<div id="wrapper-div">
+    <h2>
+        News - Community</h2>
+    <fieldset>
+        <legend>@communityDto.Name</legend>
+        <div id="three-columns-left-and-central-column">
+            <div id="left-column">
+                @if (@communityDto.ImageBlobUri != null)
+                {
+                    <img alt="@communityDto.Name" src="@communityDto.ImageBlobUri" width="270" />
+                }
+                else
+                {
+                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" width="270" />
+                }
+                <br />
+                <div class="display-field">
+                    @communityDto.Description
+                </div>
+                <br />
+                <div class="display-field">
+                    @communityDto.LatestActivityToString
+                </div>
+                <br />
+                @Html.ActionLink("#Users " + numberOfUsersInCommunity + " >>", "Users", "Community", new { id = communityId }, new { @class = "button" })
+                <br />
+                @Html.ActionLink("Community Area >>", "Area", "Community", new { id = communityId }, new { @class = "button" })
+                <br />
+                @Html.ActionLink("Added by " + addedByUserFullName + " >>", "Details", "User", new { id = addedByUserId }, new { @class = "button" })
+                @if (Request.IsAuthenticated)
+                {
+                    Html.RenderPartial("_FollowCommunityButton");
+                }
+            </div>
+            <div id="right-column">
+                <div id="map-div">
+                    @{
+                        Html.RenderPartial("_MapNewsItemList", Model);
+                    }
+                </div>
+            </div>
+        </div>
+        <div id="poll-div">
+            @if (@ViewBag.CommunityPoll != null)
+            {
+                var viewBagData = @ViewBag.CommunityPoll;
+                Html.RenderPartial("_CommunityPoll", (HLWebRole.HLServiceReference.PollDto)viewBagData);
+                Html.RenderPartial("_PollLink", (HLWebRole.HLServiceReference.PollDto)viewBagData);
+            }
+        </div>
+    </fieldset>
+</div>
+<ul id="item-list">
+    @{
+        Html.RenderPartial("_NewsItemList", Model);
+    }
+</ul>
+@{ Html.RenderPartial("_PollingForLatestBreakingNewsFromCommunityJavaScript"); }

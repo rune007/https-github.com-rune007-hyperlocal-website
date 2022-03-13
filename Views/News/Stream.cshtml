@@ -1,0 +1,240 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    ViewBag.Title = "News Stream";
+}
+@{
+    int i = 0;
+}
+<fieldset>
+    <legend>
+        @if (@Model.Count() > 0)
+        {
+            <text> News Stream</text>
+        }
+        else
+        {
+            <text>There is nothing in your News Stream (To help this follow some Communities)</text>
+        }
+    </legend>
+    @{Html.RenderPartial("_Pager");}
+    <table style="width: 100%;" class="assignment-text">
+        @foreach (var item in Model)
+        {
+            if (@i++ % 2 == 0)
+            {       
+            <tr>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="160" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="160" />
+                        }
+                    </a>
+                </td>
+                <td style="border: 3px solid #AB003C;">
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <div style="font-size: 13px; color: black;">
+                            <div style="font-size: 16px; color: black;">
+                                <b>@Html.Truncate(@item.Title, 60)</b>
+                            </div>
+                            @Html.Truncate(@item.Story, 200);
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/@item.Latitude,@item.Longitude/15?mapSize=200,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="160"
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.LocatedInCommunityID })">
+                        <div style="font-size: 16px; color: black;">
+                            <b>@item.LocatedInCommunityName</b><br />
+                        </div>
+                    </a><b>Date:</b> &nbsp;@item.CreateUpdateDate
+                    <a href="@Url.Action("Details", "User", new { id = @item.PostedByUserID })">
+                        <div class="black-table-text">
+                            <b>By:&nbsp;</b>@item.PostedByUserName
+                        </div>
+                    </a><a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        <div class="black-table-text">
+                            <b>Category:&nbsp;</b>@item.CategoryName
+                        </div>
+                    </a>
+                    @if (item.AssignmentTitle != null)
+                    {
+                        <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                            <div class="black-table-text">
+                                <b>Assignment:&nbsp;</b>@item.AssignmentTitle
+                            </div>
+                        </a>
+                    }
+                    <br />
+                    @if (item.HasVideo)
+                    {
+                        <b>Video Post</b>                       
+                    }
+                </td>
+                <td>
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                </td>
+            </tr>
+            }
+            else
+            {
+            <tr>
+                <td style="border: 3px solid #AB003C;">
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <div style="font-size: 13px; color: black;">
+                            <div style="font-size: 16px; color: black;">
+                                <b>@Html.Truncate(@item.Title, 60)</b>
+                            </div>
+                            @Html.Truncate(@item.Story, 200);
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@Html.Encode(@item.Title)" src="@item.CoverPhotoMediumSize" height="160" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="160" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.LocatedInCommunityID })">
+                        <div style="font-size: 16px; color: black;">
+                            <b>@item.LocatedInCommunityName</b><br />
+                        </div>
+                    </a><b>Date:</b> &nbsp;@item.CreateUpdateDate
+                    <a href="@Url.Action("Details", "User", new { id = @item.PostedByUserID })">
+                        <div class="black-table-text">
+                            <b>By:&nbsp;</b>@item.PostedByUserName
+                        </div>
+                    </a><a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        <div class="black-table-text">
+                            <b>Category:&nbsp;</b>@item.CategoryName
+                        </div>
+                    </a>
+                    @if (item.AssignmentTitle != null)
+                    {
+                        <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                            <div class="black-table-text">
+                                <b>Assignment:&nbsp;</b>@item.AssignmentTitle
+                            </div>
+                        </a>
+                    }
+                    <br />
+                    @if (item.HasVideo)
+                    {
+                        <b>Video Post</b>                       
+                    }
+                </td>
+                <td>
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/@item.Latitude,@item.Longitude/15?mapSize=200,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="160"
+                    </a>
+                </td>
+            </tr>
+            
+            }
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>
+@*This script is polling for the latest breaking news from a Users news stream, asynchronously, and updates the UI.*@
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    var currentNewsItemId = 0;
+
+    /* Timer determining the intervals between our polling the server for new data. */
+    window.setInterval(PollingForNewData, 2000); //in milliseconds 
+
+    function PollingForNewData() {
+
+        /* Getting the NewsItemID of the current breaking news banner, if there is one. */
+        if ($(".breaking-news").length) {
+            currentNewsItemId = $(".breaking-news").attr("meta:id");
+        }
+
+        /* Doing the actual polling for new data. */
+        $.post
+        (
+			"/News/PollingForLatestBreakingNewsFromNewsStream",
+			{ newsItemId: currentNewsItemId },
+			function (data) {
+
+			    if (data != null) {
+
+			        // In case of error we show an error message.
+			        if (data.SystemMessage != null) {
+			            ShowSystemMessage(data.SystemMessage);
+			            return;
+			        }
+
+			        /* Displaying the latest breaking news. */
+			        DisplayNewBreakingNews(data);
+			    }
+			},
+			"json"
+		);
+    }
+
+
+    /* Updating the UI to diplay the latest breaking news. */
+    function DisplayNewBreakingNews(data) {
+
+        /* Removing the old breaking news banner. */
+        if ($("#link").length) {
+            $("#link").remove();
+        }
+
+        /* Removing a eventual previous breaking news banner. */
+        $("#system-message").children().remove();
+
+        /* Generating a new banner to display the latest breaking news. */
+        var newsBanner = $("<a href=\"/News/" + data.NewsItemID + "\"><div class=\"breaking-news\" meta:id=\"" + data.NewsItemID + "\">&nbsp;&nbsp;&nbsp;&nbsp;" +
+                    "<img alt=\"XX\" src=\"" + data.CoverPhotoLarge + "\" height=\"100\" />" +
+                     "   BREAKING NEWS - " + data.Title + "</div></a>");
+
+        /* Appending the breaking news banner to the "system-message" div which is located in the layout page _LayoutBaseWrapper in the Views/Shared folder. */
+        newsBanner.appendTo("#system-message");
+        /* Showing "system-message" div to which our new breaking news banner is appended. */
+        $("#system-message").show();
+    }
+
+</script>

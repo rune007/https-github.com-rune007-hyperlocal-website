@@ -1,0 +1,73 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.UserDto>
+@{
+    ViewBag.Title = "Search Result Users";
+    var searchUserModel = (HLWebRole.Models.SearchUserModel)ViewBag.SearchUserModel;
+}
+<script src="../../Scripts/map-find-location-no-geo-validation.js" type="text/javascript"></script>
+<fieldset>
+    @Html.ActionLink("Search News >>", "News", "Search", null, new { @class = "button" })
+    &nbsp;|&nbsp;
+    @Html.ActionLink("Search Communities >>", "Community", "Search", null, new { @class = "button" })
+    <legend>@searchUserModel.NumberOfSearchResults Results</legend>
+    <div id="wrapper-div">
+        <div id="two-columns-left-column">
+            @{    
+                Html.RenderPartial("_SearchUserForm", searchUserModel);
+            }
+        </div>
+        <div id="two-columns-right-column">
+            <div id="map-div">
+                @{
+                    Html.RenderPartial("_MapUserList", Model);
+                }
+            </div>
+        </div>
+    </div>
+</fieldset>
+<ul id="item-list">
+    @{Html.RenderPartial("_UserList", Model);}
+</ul>
+<script type="text/javascript">
+
+    /************* Geocoding against Bing Maps Service (uses the script map-find-location-no-geo-validation.js) ***************/
+    $(document).ready
+    (
+        function () {
+
+            $("#Address").blur
+            (
+                function (evt) {
+
+                    var address = jQuery.trim($("#Address").val());
+                    if (address.length < 1)
+                        return;
+
+                    FindAddressOnMap(address);
+
+                }
+            );
+        }
+   );
+    /******************** End Geocoding against Bing Maps Service (uses the script map-find-location.js) *********************/
+
+    function mapLoaded() {
+
+        var title = '';
+        var address = '';
+
+        LoadPin(center, title, address);
+        map.SetZoomLevel(14);
+    }
+
+
+    // Handling the shape.onenddrag event for the draggable pushpin. 
+    function EndDragHandler(e) {
+        var location = e.LatLong;
+        var lat = location.Latitude;
+        var long = location.Longitude;
+
+        $("#Latitude").val(lat);
+        $("#Longitude").val(long);
+    };
+
+</script>

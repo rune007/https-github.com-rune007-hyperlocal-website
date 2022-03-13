@@ -1,0 +1,22 @@
+﻿@model HLWebRole.HLServiceReference.PollDto
+<div id="poll-item-@Model.PollID">
+    <div id="poll-list-div" meta:id="@Model.PollID">
+        <div id="poll-box">
+            @{ Html.RenderPartial("_ManagePollLinks", Model); }
+            <div id="current-poll" class="boxed">
+                <h2 class="title">
+                    Community Poll</h2>
+                <div class="content">
+                    @if (Model != null && Model.HasUserVoted == false)
+                    {
+                        Html.RenderPartial("_PollItem", Model);
+                    }
+                    else
+                    {
+                        Html.RenderPartial("_PollResultItem", Model);
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

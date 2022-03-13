@@ -1,0 +1,29 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@if (Model != null)
+{
+    <ul id="item-list">
+        @foreach (var newsItem in Model)
+        {
+            <li><a href="@Url.Action("Details", "News",
+        new { id = newsItem.NewsItemID })">
+                @if (newsItem.HasPhoto)
+                {
+                    <img alt="@newsItem.Title" src="@newsItem.CoverPhotoMediumSize" width="130" height="100" />
+                }
+                else
+                {
+                    <img alt="" src="/Content/images/noPhotoAvailable.jpg" width="130" height="100" />
+                }
+                <br />
+                <span><b>@newsItem.CategoryName
+                    @if (newsItem.HasVideo)
+                    { <text>- Video -</text>}
+                    else
+                    {<text> - </text> }</b>
+                    @newsItem.CreateUpdateDateToString
+                    @Html.Truncate(@newsItem.Title, 25)<br />
+                    V @newsItem.NumberOfViews | C @newsItem.NumberOfComments | S @newsItem.NumberOfShares</span>
+            </a></li>
+        }
+    </ul>
+}

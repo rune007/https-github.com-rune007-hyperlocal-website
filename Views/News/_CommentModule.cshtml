@@ -1,0 +1,176 @@
+﻿@model HLWebRole.Models.NewsItemModel
+@{
+    /* Comments on the NewsItem. */
+    var commentDtos = (IEnumerable<HLWebRole.HLServiceReference.CommentDto>)ViewBag.CommentDtos;
+    var commentModel = (HLWebRole.Models.CommentModel)ViewBag.CommentModel;
+
+    /* Logged in User who can comment on the NewsItem */
+    HLWebRole.HLServiceReference.UserDto userDto;
+    string userFullName = string.Empty;
+    string thumbnailBlobUri = string.Empty;
+    if (Request.IsAuthenticated)
+    {
+        userDto = (HLWebRole.HLServiceReference.UserDto)ViewBag.UserDto;
+        userFullName = userDto.FullName;
+        thumbnailBlobUri = userDto.ThumbnailBlobUri;
+    }
+}
+@using (Html.BeginForm("Create", "Comment", FormMethod.Post))
+{ 
+    <div id="comment-input-form">
+        <div id="" class="comment">
+            @if (Request.IsAuthenticated)
+            {
+                <div class="comment-header">
+                    @if (@thumbnailBlobUri != null)
+                    {
+                        <img src="@thumbnailBlobUri" alt="@userFullName" height="40px" /><text>&nbsp;</text>
+                    }
+                    else
+                    {
+                        <img src="../../Content/images/noPhotoAvailable.jpg" alt="@userFullName" height="40px" /><text>&nbsp;</text>
+                    }
+                    <span class="name">@userFullName
+                        - <b>Post Your Comment</b></span>
+                </div>
+                <blockquote class="body">
+                    <div class="editor-field">
+                        @Html.TextAreaFor(model => commentModel.CommentBody, 6, 44, null)
+                        &nbsp;
+                        <button id="btnComment">
+                            Post Comment</button>
+                        <br />
+                        @Html.ValidationMessageFor(model => commentModel.CommentBody)
+                    </div>
+                </blockquote>
+            }
+            else
+            {<div class="comment-header">
+                <span class="name">
+                    @Html.ActionLink("Login to Comment >>", "LogOn", "User", null, new { @class = "button" })
+                </span>
+            </div>
+            }
+        </div>
+    </div>
+}
+ @{Html.RenderPartial("_Pager");}
+<div id="comment-list">
+    @foreach (var item in commentDtos)
+    {
+        Html.RenderPartial("_CommentItem", (HLWebRole.HLServiceReference.CommentDto)item);
+    }
+</div>
+ @{Html.RenderPartial("_Pager");}
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = jQuery("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    var commentList = jQuery("#comment-list");
+
+    var newsItemId = '@(Model.NewsItemID)';
+
+    /* Adds the Comment. */
+    jQuery("#btnComment").click
+    (
+        function () {
+
+            /* Because we are posting the form asynchronously we need to enforce validation with the code just below. */
+            var isFormValid = jQuery('form').validate().form();
+            if (isFormValid) {
+                var url = jQuery("form").attr("action");
+                var commentBody = jQuery("#commentModel_CommentBody").text();
+
+                jQuery.post
+                (
+                    url,
+                    { newsItemId: newsItemId, commentBody: commentBody },
+                    function (data, textStatus) {
+                        // Hiding eventual old error messages.
+                        systemMessageDiv.hide();
+
+                        if (data != null) {
+                            // In case of error we show an error message.
+                            if (data.SystemMessage != null) {
+                                ShowSystemMessage(data.SystemMessage);
+                                return;
+                            }
+                            AddCommentItemToCommentList(data);
+                        }
+                    },
+		            "json"
+	            );
+            }
+            return false;
+        }
+    );
+
+
+    /* Deletes the Comment. */
+    function DeleteComment() {
+
+        var rowKey = jQuery(this).attr("meta:id");
+
+        var doDelete = confirm("Are you sure you want to delete the Comment?");
+
+        if (doDelete) {
+
+            jQuery.post
+            (
+		        "/Comment/Delete",
+		        { newsItemId: newsItemId, rowKey: rowKey },
+		        function (data) {
+
+		            // Hiding eventual old error messages.
+		            systemMessageDiv.hide();
+
+		            // In case of error we show an error message.
+		            if (data.SystemMessage != null) {
+		                ShowSystemMessage(data.SystemMessage);
+		                return;
+		            }
+		            jQuery("#comment-" + data.RowKey).fadeOut("slow", function () { jQuery(this).remove() });
+		        },
+		        "json"
+	        );
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+    jQuery(".delete-button").click(DeleteComment);
+
+
+    /* Adds the Comment to the comment list. */
+    function AddCommentItemToCommentList(data) {
+
+        /* The markup of the new comment item. */
+        var commentItem = jQuery("<div id=\"comment-column\"><div id=\"comment-" + data.RowKey + "\" class=\"comment\">" +
+                "<div class=\"comment-header\"><a href=\"User/Details/" + data.PostedByUserID + "\"><img src=\"" + data.ThumbnailBlobUri +
+                "\" alt=\"" + data.PostedByUserName + "\" height=\"40px\" /></a>&nbsp;" +
+                "<span class=\"name\"><a class=\"name\" href=\"/User/Details/" + data.PostedByUserID + "\" id=\"comment-info\">" + data.PostedByUserName + "</a></span>- " +
+                data.CreateDate + "&nbsp;<button type=\"button\" class=\"delete-button\" meta:id=\"" + data.RowKey + "\">Delete</button></div><blockquote class=\"body\">" + data.CommentBody + "</blockquote></div></div>");
+
+        /* Prepends the comment item to the comment list in a slow fadeIn. */
+        commentItem.hide().prependTo(commentList).fadeIn("slow");
+
+        commentItem.find(".delete-button").click(DeleteComment);
+
+        // clear the Comment input field
+        jQuery("#commentModel_CommentBody").val("");
+    }
+
+</script>

@@ -1,0 +1,19 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutBase.cshtml";
+}
+
+@*<div id="layout-wrapper">*@
+
+    @*This renders the central column.*@
+    <div id="three-columns-left-and-central-column">
+        @RenderBody()
+    </div>
+    @*This renders the left column.*@
+
+   <div id="poll-div">
+
+        @RenderSection("PollSectionThree", false)
+
+    </div>
+
+@*</div>*@

@@ -1,0 +1,131 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.AssignmentDto>
+@{
+    int i = 0;
+}
+<table style="width: 100%;" class="assignment-text">
+    @foreach (var item in Model)
+    {
+        if (@i++ % 2 == 0)
+        {       
+        <tr>
+            <td>
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    @if (item.MediumSizeBlobUri != null)
+                    {
+                        <img alt="@item.Title" src="@item.MediumSizeBlobUri" height="150" />
+                    }
+                    else
+                    {
+                        <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                    }
+                </a>
+            </td>
+            <td>
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    @if (item.LatestNewsLatitude != null)
+                    {
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+                11.645507812500017/5?mapSize=300,200&pp=@item.LatestNewsLatitude,@item.LatestNewsLongitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="150" />
+                    }
+                    else
+                    {
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+            11.645507812500017/5?mapSize=300,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="150" />
+                    }
+                </a>
+            </td>
+            <td style="border: 3px solid #AB003C;">
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    <div style="font-size: 13px; color: black;">
+                        <b>@item.Title</b><br />
+                        <br />
+                        @Html.Truncate(@item.Description, 280)
+                    </div>
+                </a>
+            </td>
+            <td style="width: 130px;">
+                @if (item.AssignmentCenterAddress != null)
+                {
+                    <text><b>@@</b></text><b>@item.AssignmentCenterAddress</b>
+                    <text><b>&nbsp;within a radius of&nbsp;</b></text><b>@item.AssignmentRadius</b> <text><b>km</b></text><br />
+                    <br />                    
+                }
+                <b>Created: </b>
+                @item.CreateUpdateDate<br />
+                <br />
+                <b>Expiry Date: </b>
+                @item.ExpiryDate
+                <br />
+                <br />
+                <b># News Posts: </b>@item.NumberOfNewsItemsOnAssignment<br />
+                <br />
+                @if (item.LatestActivityToString != null)
+                {
+                    <b>Latest Activity: </b>@item.LatestActivity<br />
+                }
+            </td>
+        </tr>
+        }
+        else
+        {
+        <tr>
+            <td style="width: 130px;">
+                @if (item.AssignmentCenterAddress != null)
+                {
+                    <text><b>@@</b></text><b>@item.AssignmentCenterAddress</b>
+                    <text><b>&nbsp;within a radius of&nbsp;</b></text><b>@item.AssignmentRadius</b> <text><b>km</b></text><br />
+                    <br />                    
+                }
+                <b>Created: </b>
+                @item.CreateUpdateDate<br />
+                <br />
+                <b>Expiry Date: </b>
+                @item.ExpiryDate
+                <br />
+                <br />
+                <b># News Posts: </b>@item.NumberOfNewsItemsOnAssignment<br />
+                <br />
+                @if (item.LatestActivityToString != null)
+                {
+                    <b>Latest Activity: </b>@item.LatestActivity<br />
+                }
+            </td>
+            <td style="border: 3px solid #AB003C;">
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    <div style="font-size: 13px; color: black;">
+                        <b>@item.Title</b><br />
+                        <br />
+                        @Html.Truncate(@item.Description, 280)
+                    </div>
+                </a>
+            </td>
+            <td>
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    @if (item.LatestNewsLatitude != null)
+                    {
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,11.645507812500017/5?mapSize=300,200&pp=@item.LatestNewsLatitude,@item.LatestNewsLongitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="150" />
+                    }
+                    else
+                    {
+                        <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,11.645507812500017/5?mapSize=300,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="150" />
+                    }
+                </a>
+            </td>
+            <td>
+                <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                    @if (item.MediumSizeBlobUri != null)
+                    {
+                        <img alt="@item.Title" src="@item.MediumSizeBlobUri" height="150" />
+                    }
+                    else
+                    {
+                        <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                    }
+                </a>
+            </td>
+        </tr>            
+        }
+    }
+</table>

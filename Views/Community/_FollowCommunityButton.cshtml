@@ -1,0 +1,88 @@
+﻿@*This partial view renders a Follow/Unfollow button for Community.*@
+@{ 
+    var communityDto = (HLWebRole.HLServiceReference.CommunityDto)ViewBag.CommunityDto;
+    var communityId = communityDto.CommunityID;
+    var isUserFollowingCommunity = ViewBag.IsUserFollowingCommunity;
+}
+<br />
+<br />
+<input type="button" class="button" id="btnFollow" value="Follow" />
+<input type="button" class="button" id="btnUnfollow" value="Unfollow" />
+<script type="text/javascript">
+
+            // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+            // "SystemMessage", which is used to transport the error message from the controller to the view.
+            var systemMessageDiv = $("#system-message");
+            systemMessageDiv.hide();
+
+            // Displays the error message through the "system-message" div.
+            function ShowSystemMessage(systemMessage) {
+                systemMessageDiv.text(systemMessage);
+                systemMessageDiv.addClass("error");
+                systemMessageDiv.show();
+            }
+
+            var btnFollow = $("#btnFollow");
+            var btnUnfollow = $("#btnUnfollow");
+
+            var isUserFollowingCommunity = @Html.Raw(Json.Encode(ViewBag.IsUserFollowingCommunity));
+            var communityId = @Html.Raw(Json.Encode(communityId));
+
+            if(isUserFollowingCommunity)
+            {
+                btnFollow.hide();
+                btnUnfollow.show();
+            }
+            else
+            {
+                btnUnfollow.hide();
+                btnFollow.show();
+            }
+
+
+            /* Follow Community */
+            btnFollow.click(function () {
+                $.post
+                (
+		            "/Community/FollowCommunity",
+		            { communityId: communityId },
+		            function (data) {
+		                systemMessageDiv.hide();
+                        /* Showing an eventual SystemMessage (error) in case something goes wrong. */
+		                if (data.SystemMessage != null) {
+		                    ShowSystemMessage(data.SystemMessage);
+		                }
+                        else {
+                            /* Updating the UI.*/
+                            btnFollow.hide();
+                            btnUnfollow.show();
+                        }
+		            },
+		            "json"
+	            );
+            });
+
+
+            /* Unfollow Community */
+            btnUnfollow.click(function () {
+                $.post
+                (
+		            "/Community/UnfollowCommunity",
+		            { communityId: communityId },
+		            function (data) {
+		                systemMessageDiv.hide();
+                        /* Showing an eventual SystemMessage (error) in case something goes wrong. */
+		                if (data.SystemMessage != null) {
+		                    ShowSystemMessage(data.SystemMessage);
+		                }
+                        else {
+                            /* Updating the UI.*/
+                            btnUnfollow.hide();
+                            btnFollow.show();
+                        }
+		            },
+		            "json"
+	            );
+            });             
+                
+</script>

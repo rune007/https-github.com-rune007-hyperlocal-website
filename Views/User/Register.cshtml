@@ -1,0 +1,223 @@
+﻿@model HLWebRole.Models.UserModel
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+}
+<link href="@Url.Content("~/Scripts/uploadify/uploadify.css")" rel="stylesheet" type="text/css" />
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+@*Uploadify jQuery file uploader plugin*@
+<script src="@Url.Content("~/Scripts/uploadify/jquery.uploadify.v2.1.4.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/uploadify/swfobject.js")" type="text/javascript"></script>
+@using (Html.BeginForm("Register", "User", FormMethod.Post))
+{
+    <fieldset>
+        <legend>Register</legend>
+        <div id="wrapper-div">
+            <div id="two-columns-left-column">
+                @Html.ValidationMessageFor(model => model.Latitude)
+                @Html.ValidationSummary(true)
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Email)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Email)<br />
+                    @Html.ValidationMessageFor(model => model.Email)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.FirstName)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.FirstName)<br />
+                    @Html.ValidationMessageFor(model => model.FirstName)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.LastName)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.LastName)<br />
+                    @Html.ValidationMessageFor(model => model.LastName)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.PhoneNumber)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.PhoneNumber)<br />
+                    @Html.ValidationMessageFor(model => model.PhoneNumber)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Address)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Address)<br />
+                    @Html.ValidationMessageFor(model => model.Address)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Bio)
+                </div>
+                <div class="editor-field">
+                    @Html.TextAreaFor(model => model.Bio, 6, 44, null)<br />
+                    @Html.ValidationMessageFor(model => model.Bio)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Password)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Password)<br />
+                    @Html.ValidationMessageFor(model => model.Password)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.ConfirmPassword)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.ConfirmPassword)<br />
+                    @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                </div>
+                @Html.HiddenFor(model => model.Latitude)
+                @Html.HiddenFor(model => model.Longitude)
+                @Html.HiddenFor(model => model.LastLoginLatitude)
+                @Html.HiddenFor(model => model.LastLoginLongitude)
+                <div id="geoLocationStatus">
+                </div>
+                @Html.Label("Add Your Photo:")<br />
+                <div id="fileuploader">
+                </div>
+                <div id="mediaProcessingGif">
+                    <img src="/Content/images/processingMedia.gif" alt="x" width="150" />
+                </div>
+                <p>
+                    <input type="button" class="button" id="btnSave" value="Register" />
+                </p>
+            </div>
+            <div id="two-columns-right-column">
+                <div id="map-div">
+                    @{Html.RenderPartial("_MapUserCreate", Model);}
+                </div>
+            </div>
+        </div>
+    </fieldset>
+}
+
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    var mediaProcessingGif = $("#mediaProcessingGif");
+    mediaProcessingGif.hide();
+
+    /* This flag tell us whether Uploadify has any files to upload, in case of a file is added to Uploadify's queue of files to upload, the
+    'onSelectOnce' event will be fired and set the noFilesToUpload flag to false. */
+    var noFilesToUpload = true;
+    var userId;
+
+
+    /************************************** HTML 5 Geolocation, location aware browser  *********************************/
+    function success(position) {
+        var s = document.querySelector('#geoLocationStatus');
+        if (s.className == 'success') {
+            return;
+        }
+
+        // Updating the fields with the location of the browser.
+        $("#LastLoginLatitude").val(position.coords.latitude.toString());
+        $("#LastLoginLongitude").val(position.coords.longitude.toString());
+
+    }
+    /* Catching the error and communicating it to the UI via system-message DIV. */
+    function error(msg) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : "Geolocation Failed"; s.className = 'error';
+    }
+
+
+    $(document).ready
+    (
+        function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error);
+            }
+            else {
+                error('not supported');
+            }
+        }
+    );
+    /************************************** End HTML 5 Geolocation, location aware browser  *********************************/
+
+
+    /*********************** Uploadify File Uploader plugin **********************************/
+    $(window).load(
+    function () {
+        $("#fileuploader").uploadify({
+            'uploader': '@Url.Content("/Scripts/uploadify/uploadify.swf")',
+            'cancelImg': '/Scripts/uploadify/cancel.png',
+            'buttonText': 'Browse For File',
+            'script': '@Url.Action("Upload")',
+            'folder': '/uploads',
+            'scriptData': { 'hostItemId': userId },
+            'onAllComplete': function (event, data) { window.location = "/User/" + userId; },
+            'onError': function (a, b, c, d) {
+                if (d.type === "File Size")
+                    alert("The File: " + c.name + " Violates the File Size Limit, which is: " + Math.round(d.info / (1024 * 1024)) + "MB, Please Remove the File!")
+            },
+            'onSelectOnce': function (event, data) { noFilesToUpload = false; },
+            'fileDesc': 'Media Files',
+            'fileExt': '*.jpg;*.jpeg;',
+            'sizeLimit': 27000000,
+            'multi': false,
+            'auto': false
+        });
+        /*********************** End Uploadify File Uploader plugin **********************************/
+
+        $("#btnSave").click
+        (
+            function () {
+
+                /* Because we are posting the form asynchronously we need to enforce validation with the code just below. */
+                var isFormValid = $('form').validate().form();
+                if (isFormValid) {
+                    var url = $("form").attr("action");
+                    var inputData = $("form").serialize();
+                    mediaProcessingGif.show();
+                    $.post(url, inputData, function (data) {
+                        // Hiding eventual old error messages.
+                        systemMessageDiv.hide();
+
+                        if (data != null) {
+
+                            // In case of error we show an error message.
+                            if (data.SystemMessage != null) {
+                                ShowSystemMessage(data.SystemMessage);
+                                mediaProcessingGif.hide();
+                                return;
+                            }
+
+                            userId = data.UserID;
+                            $('#fileuploader').uploadifySettings("scriptData", { 'hostItemId': userId });
+                            $('#fileuploader').uploadifyUpload();
+                            /* The noFilesToUpload flag determines how we are being redirected to the Details view after processing form input.
+                            If noFilesToUpload is false, we are being redirected to the Details view, via Uploadify's onAllComplete event.
+                            If noFilesToUpload is true, we are being redirected to the Details view via the code just below. */
+                            if (noFilesToUpload) {
+                                if (userId != null) {
+                                    window.location = "/User/" + userId;
+                                }
+                            }
+                        };
+                    });
+                }
+
+            }
+        );
+    }
+);
+
+</script>

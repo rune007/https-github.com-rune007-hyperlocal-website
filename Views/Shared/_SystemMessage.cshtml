@@ -1,0 +1,50 @@
+﻿@if (@TempData["InfoMessage"] != null)
+{
+    <div class="info">
+        @TempData["InfoMessage"]
+    </div>
+}
+@if (@TempData["SuccessMessage"] != null)
+{
+    <div class="success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (@TempData["WarningMessage"] != null)
+{
+    <div class="warning">
+        @TempData["WarningMessage"]
+    </div>
+}
+@if (@TempData["ErrorMessage"] != null)
+{
+    <div class="error">
+        @TempData["ErrorMessage"]
+    </div>
+}
+@if (@TempData["ValidationMessage"] != null)
+{
+    <div class="validation">
+        @TempData["ValidationMessage"]
+    </div>
+}
+@if (@TempData["BreakingNews"] != null)
+{
+    <a  id="link" href="/News/@TempData["NewsItemID"]">
+        <div class="breaking-news" meta:id="@TempData["NewsItemID"]">
+             &nbsp;&nbsp;&nbsp;&nbsp;
+            <img alt="XX" src="@TempData["PhotoUri"]" height="100" />
+            @TempData["BreakingNews"]
+        </div>
+    </a>
+}
+@if (@TempData["TrendingNews"] != null)
+{
+    <a  id="link" href="/News/@TempData["NewsItemID"]">
+        <div class="trending-news" meta:id="@TempData["NewsItemID"]">
+             &nbsp;&nbsp;&nbsp;&nbsp;
+            <img alt="XX" src="@TempData["PhotoUri"]" height="100" />
+            @TempData["TrendingNews"]
+        </div>
+    </a>
+}

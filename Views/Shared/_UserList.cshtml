@@ -1,0 +1,66 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.UserDto>
+@{
+    /* Allowing us to control the listType from the controller via ViewBag. */
+    var userListType = "Normal";
+
+    if (ViewBag.UserListType != null)
+    {
+        userListType = ViewBag.UserListType;
+    }
+}
+@if (userListType == "Normal")
+{
+    if (Model != null)
+    {
+    <ul id="item-list">
+        @foreach (var item in Model)
+        {
+            <li><a href="@Url.Action("Details", "User",
+        new { id = item.UserID })">
+                @if (item.HasPhoto)
+                {
+                    <img alt="@item.FullName" src="@item.MediumSizeBlobUri" width="130" height="100" />
+                }
+                else
+                {
+                    <img alt="" src="/Content/images/noPhotoAvailable.jpg" width="130" height="100" />
+                }
+                <br />
+                <span><b>@Html.Truncate(@item.FullName, 25)</b>&nbsp;
+                    @if (item.LatestActivity != null)
+                    {              
+                        <text>Latest Activity: @item.LatestActivity&nbsp;&nbsp;#News Posts @item.NumberOfNewsItemsPostedByUser</text>
+                    }
+                </span></a></li>
+        }
+    </ul>
+    }
+}
+@if (userListType == "GeoTemporalAssignment")
+{
+    if (Model != null)
+    {
+    <ul id="item-list">
+        @foreach (var item in Model)
+        {
+            <li><a href="@Url.Action("Details", "User",
+        new { id = item.UserID })">
+                @if (item.HasPhoto)
+                {
+                    <img alt="@item.FullName" src="@item.MediumSizeBlobUri" width="130" height="100" />
+                }
+                else
+                {
+                    <img alt="" src="/Content/images/noPhotoAvailable.jpg" width="130" height="100" />
+                }
+                <br />
+                <span><b>@Html.Truncate(@item.FullName, 25)</b>&nbsp;
+                    @if (item.LatestActivityToString != null)
+                    {              
+                        <text>@item.LatestActivityToString</text>
+                    }
+                </span></a></li>
+        }
+    </ul>
+    }
+}

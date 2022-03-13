@@ -1,0 +1,163 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PollDto>
+@{
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    var communityDto = (HLWebRole.HLServiceReference.CommunityDto)ViewBag.CommunityDto;
+    ViewBag.Title = "Polls - " + communityDto.Name;
+}
+<fieldset>
+    <legend><a href="@Url.Action("Details", "Community", new { id = @communityDto.CommunityID })">
+        @if (@Model.Count() > 0)
+        {
+            <text>
+            @if (@communityDto.HasPhoto)
+            {           
+                <img alt="@communityDto.Name" src="@communityDto.MediumSizeBlobUri" height="50"/>
+            }
+            else
+            {
+            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="50"/>
+            }
+            &nbsp;Polls for community @communityDto.Name
+            </text>
+        }
+        else
+        {
+            <text>
+            @if (@communityDto.HasPhoto)
+            {           
+                <img alt="@communityDto.Name" src="@communityDto.MediumSizeBlobUri" height="50"/>
+            }
+            else
+            {
+            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="50"/>
+            }
+            &nbsp;No Polls for community @communityDto.Name </text>
+        }
+    </a></legend>
+    @{Html.RenderPartial("_Pager");}
+    <div id="wrapper-div">
+        @foreach (var item in Model)
+        {
+            if (item != null)
+            {
+                Html.RenderPartial("_CommunityPollForList", item);
+            }
+        }
+    </div>
+</fieldset>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    $(".poll form").submit(function () {
+        var selection = $(this).find(":checked").val();
+
+        if (selection != undefined) {
+            $.post(
+			"/Poll/VoteCommunityPoll",
+			{ optionId: selection },
+			function (data, textStatus) {
+
+			    // Hiding eventual old error messages.
+			    systemMessageDiv.hide();
+
+			    // In case of error we show an error message.
+			    if (data.SystemMessage != null) {
+			        ShowSystemMessage(data.SystemMessage);
+			        return;
+			    }
+
+			    // Render the poll for the given data.
+			    RenderPoll($("#poll-" + data.PollID), data);
+			},
+			"json"
+		);
+        }
+
+        return false;
+    });
+
+
+    function RenderPoll(obj, data) {
+        var poll = $(obj),
+		total = 0,
+		item, percentValue, rightValue, leftValue;
+
+        // Clears all child nodes.
+        poll.empty();
+        poll.append("<h2>" + data.QuestionText + "</h2>");
+        poll.append("<ul class=\"poll-options\">");
+
+        // Counting the collective number of votes thrown.
+        for (var i = 0; i < data.PollOptions.length; i++) {
+            item = data.PollOptions[i];
+            total += item.Votes;
+        }
+
+        // Go through each PollOption and render it.
+        for (var i = 0; i < data.PollOptions.length; i++) {
+            item = data.PollOptions[i];
+            percentValue = Math.round(item.Votes / total * 100);
+
+            poll.append("<li class=\"option\" id=\"option-" + item.OptionID + "\">"
+		+ "<h3>" + item.OptionText + "</h3>"
+		+ "<div class=\"graph\"><img src=\"/Content/images/poll-graph.gif\" height=\"10\" width=\"" + percentValue + "%\" /></div>"
+		+ "<div class=\"values\">" + percentValue + "% (" + item.Votes + " votes)</div>"
+		+ "</li>");
+        }
+
+        poll.append("</ul>");
+        poll.append("<div class=\"total\">There are " + total + " total votes for this poll.</div>");
+    }
+
+
+    /* Deleting a Poll. */
+    //    $('button').click
+
+    $('.delete-button').click
+    (
+    	function () {
+    	    var title = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Delete Poll "' + title + '"?';
+    	    var doDelete = confirm(confirmMessage);
+
+    	    if (doDelete) {
+    	        var pollId = $(this).attr("meta:id");
+
+    	        $.post
+    	        (
+    	        	"/Poll/Delete",
+    	        	{ pollId: pollId },
+    	        	function (data) {
+    	        	    // Hiding eventual old error messages.
+    	        	    systemMessageDiv.hide();
+
+    	        	    if (data != null) {
+    	        	        // In case of error we show an error message.
+    	        	        if (data.SystemMessage != null) {
+    	        	            ShowSystemMessage(data.SystemMessage);
+    	        	            return;
+    	        	        }
+    	        	        /* Removing item*/
+    	        	        $("#poll-item-" + pollId).slideUp("slow");
+    	        	        $("#poll-item-" + pollId).remove();
+    	        	    }
+    	        	},
+    	        	"json"
+    	        );
+    	    }
+    	}
+    );
+
+</script>

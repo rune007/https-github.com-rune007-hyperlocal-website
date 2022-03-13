@@ -1,0 +1,36 @@
+﻿@*Links for the user to manage their profile. It only displays when the user watches a profile which they own themselves.*@
+@model HLWebRole.Models.UserModel
+@{
+    var userId = Convert.ToInt32(Session["userId"]);
+}
+@*Making sure only the user who owns the profile can see the manage user profile links.*@
+@if (Model.UserID == userId)
+{
+    @Html.ActionLink("Edit User Profile >>", "Edit", new { id = Model.UserID })
+    <br />    
+    @Html.ActionLink("Change Password >>", "ChangePassword")
+    <br />   
+    using (Html.BeginForm("Delete", "User", FormMethod.Post, new { id = "delete-form" }))
+    {
+    <p>
+        <input type="button" class="button" id="delete-button" value="Delete Your Profile" />
+    </p>
+    }
+}
+<script type="text/javascript">
+
+    /* Deleting User profile. */
+    $(".button#delete-button").click
+    (
+    	function () {
+
+    	    var confirmMessage = 'Are you sure you want to Delete Your User Profile?';
+    	    var status = confirm(confirmMessage);
+
+    	    if (status) {
+
+    	        $('#delete-form').submit();
+    	    }
+    	});
+
+</script>

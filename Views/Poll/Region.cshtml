@@ -1,0 +1,37 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PollDto>
+@{
+    var uiAreaIdentifier = ViewBag.UiAreaIdentifier;
+    var areaIdentifier = ViewBag.AreaIdentifier;
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    if (@Model.Count() > 0)
+    {
+        ViewBag.Title = "Polls - " + uiAreaIdentifier;
+    }
+    else
+    {
+        ViewBag.Title = "No Polls for the region";
+    }    
+}
+<fieldset>
+    <legend><a href="@Url.Action("Region", "News", new { id = @areaIdentifier })">
+        @if (@Model.Count() > 0)
+        {
+            <text>Polls for @uiAreaIdentifier</text>           
+        }
+        else
+        {
+            <text>No Polls for the region</text>
+        }
+    </a></legend>
+    @{Html.RenderPartial("_Pager");}
+    <div id="wrapper-div">
+        @foreach (var item in Model)
+        {
+            if (item != null)
+            {
+                Html.RenderPartial("_AnonymousPollForList", item);
+            }
+        }
+    </div>
+</fieldset>
+@{Html.RenderPartial("_AnonymousPollListJavaScript");}

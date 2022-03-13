@@ -1,0 +1,169 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.CommunityDto>
+@{
+    /* Allowing us to control the size of the map from the controller via ViewBag. */
+    var mapSize = "Small";
+
+    if (ViewBag.MapSize != null)
+    {
+        mapSize = ViewBag.MapSize;
+    }
+}
+<script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3" type="text/javascript"></script>
+<script src="../../Scripts/jquery-1.5.1.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    try
+    {
+        var map = null;
+        function GetMap() {
+
+            map = new VEMap('myMap');
+            map.SetDashboardSize(VEDashboardSize.Small);
+
+            /* itemsToDisplay indicates whether we have any items to display. If so, true, we just adjust the map according to the items.
+            If not, false, then we get the area center of the area the map displays and adjust the map according to that.*/
+            var itemsToDisplay = @Html.Raw(Json.Encode(ViewBag.ItemsToDisplay));
+
+            if (itemsToDisplay )
+            {
+                map.LoadMap();
+            }
+            else
+            {
+                var areaCenterLatitude = @Html.Raw(Json.Encode(ViewBag.AreaCenterLatitude));
+                var areaCenterLongitude = @Html.Raw(Json.Encode(ViewBag.AreaCenterLongitude));
+                var mapZoomLevel = @Html.Raw(Json.Encode(ViewBag.MapZoomLevel));
+                // Define the parameters for the map
+                map.LoadMap(new VELatLong(areaCenterLatitude, areaCenterLongitude), 5, VEMapStyle.Road, false);
+                map.SetZoomLevel(mapZoomLevel);
+            }
+        }
+    }
+    catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+
+</script>
+@{Html.RenderPartial("_Pager");}
+@*We can choose to render the map in different sizes.*@
+@if (mapSize == "ExtraSmall")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 580px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Small")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 640px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Medium")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 870px; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Large")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 100%; height: 480px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@if (mapSize == "Broad")
+{
+    <text>
+    <div id='myMap' style="position: relative; width: 740px; height: 380px; left: 0px;
+        top: 0px; border: 1px solid;">
+    </div>
+    </text>
+}
+@{Html.RenderPartial("_Pager");}
+<script type="text/javascript">
+
+    try
+    {
+        var items = @(Html.JSValue(Model))
+
+        if (items != null) {
+            ProcessData(items);
+        }
+
+        function ProcessData(items) {
+            GetMap();
+            $.each
+            (
+                items,
+                function (i, Item) {
+
+                    var wkt = Item.PolygonWkt
+                    var shape = AddPolygonToMap(wkt);
+                    var linkTitle = '<a href="/Community/Details/' + Item.CommunityID + '">' + Item.Name + '</a>';
+                    shape.SetTitle(linkTitle);
+                    shape.SetPhotoURL(Item.MediumSizeBlobUri);
+                    shape.SetDescription(Item.LatestActivityToString);
+                    map.AddShape(shape);
+
+                    // Getting the points of the first iteration.
+                    if (i == 0) {
+                        points = shape.GetPoints();
+                    }
+
+                    // Concatenating the points of the first iteration to the following iterations.
+                    else {
+                        pointsTwo = shape.GetPoints();
+                        points = points.concat(pointsTwo);
+                    }
+
+                    // Setting the map view in the last iteration.
+                    if (i == items.length - 1) {
+                        map.SetMapView(points);
+                    }
+                }
+            );
+        }
+
+
+        // Converts the polygon WKT to VEShape and put the shape on the map.
+        function AddPolygonToMap(wkt) {
+            // This should store objects like: ['12.518405914319676 55.709173951207539', '12.539563178975145 55.707360541320753']
+            var wktCoordinatePairs = [];
+            // Shall store WKT coordinate sets that looks like this: ['12.518405914319676', '55.709173951207539']
+            var wktCoordinateSets = [];
+            // Here we will store objects like: 'VELatLong(55.709173951207539, 12.518405914319676)'
+            var veLatLongPoints = [];
+
+            // Removing 'POLYGON ((' & '))' from WKT.
+            wkt = wkt.replace('POLYGON ((', '');
+            wkt = wkt.replace('))', '');
+
+            // Getting an array of wktCoordinatePairs.
+            wktCoordinatePairs = wkt.split(',');
+
+            // Iterating through the wktCoordinatePairs
+            for (var i = 0; i < wktCoordinatePairs.length; i++) {
+                // Splitting each of the wktCoordinatePairs into wktCoordinateSets
+                wktCoordinateSets = wktCoordinatePairs[i].trim().split(' ');
+
+                // Storing the VELatLong point in the veLatLongPoints array.
+                veLatLongPoints.push(new VELatLong(parseFloat(wktCoordinateSets[1]), parseFloat(wktCoordinateSets[0])));
+            }
+            // Creating the VEShape polygon.
+            var shape = new VEShape(VEShapeType.Polygon, veLatLongPoints);
+
+            return shape;
+            }
+        }
+        catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+
+</script>

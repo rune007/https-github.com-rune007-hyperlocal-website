@@ -1,0 +1,58 @@
+﻿@model HLWebRole.HLServiceReference.CommunityDto
+@{
+    ViewBag.Title = "Community Area: " + Model.Name;
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    /* The partial view _PollingForLatestBreakingNewsFromCommunityJavaScript expects CommunityDto via ViewBag. */
+    var communityDto = (HLWebRole.HLServiceReference.CommunityDto)ViewBag.CommunityDto;
+}
+<div id="wrapper-div">
+    <h2>
+        Area - Community</h2>
+    <fieldset>
+        <legend>@Model.Name</legend>
+        <div id="three-columns-left-and-central-column">
+            <div id="left-column">
+                @if (@Model.ImageBlobUri != null)
+                {
+                    <img alt="@Model.Name" src="@Model.ImageBlobUri" width="270" />
+                }
+                else
+                {
+                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" width="270" />
+                }
+                <br />
+                <div class="display-field">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+                <br />
+                <div class="display-field">
+                    @Html.DisplayFor(model => model.LatestActivityToString)
+                </div>
+                <br />
+                @Html.ActionLink("News >>", "Details", "Community", new { id = Model.CommunityID }, new { @class = "button" })
+                <br />
+                @Html.ActionLink("#Users " + Model.NumberOfUsersInCommunity + " >>", "Users", "Community", new { id = Model.CommunityID }, new { @class = "button" })
+                <br />
+                @Html.ActionLink("Added by " + Model.AddedByUserFullName + " >>", "Details", "User", new { id = Model.AddedByUserID }, new { @class = "button" })
+                @if (Request.IsAuthenticated)
+                {
+                    Html.RenderPartial("_FollowCommunityButton");
+                }
+            </div>
+            <div id="right-column">
+                <div id="map-div">
+                    @{Html.RenderPartial("_MapCommunityDetails", Model);}
+                </div>
+            </div>
+        </div>
+        <div id="poll-div">
+            @if (@ViewBag.CommunityPoll != null)
+            {
+                var viewBagData = @ViewBag.CommunityPoll;
+                Html.RenderPartial("_CommunityPoll", (HLWebRole.HLServiceReference.PollDto)viewBagData);
+                Html.RenderPartial("_PollLink", (HLWebRole.HLServiceReference.PollDto)viewBagData);
+            }
+        </div>
+    </fieldset>
+</div>
+@{ Html.RenderPartial("_PollingForLatestBreakingNewsFromCommunityJavaScript"); }

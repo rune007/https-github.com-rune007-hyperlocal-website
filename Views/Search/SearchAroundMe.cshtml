@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "hyperlocal";
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+}
+<h2>
+    To see the News Around You, allow us to Track Your Current Physical Location</h2>
+<fieldset>
+    @*<legend>To see the News Around You, allow us to Track Your Current Physical Location</legend>*@
+    <script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.5.1.js" type="text/javascript"></script>
+    @using (Html.BeginForm("SearchAroundMe", "Search"))
+    {         
+        @Html.Hidden("latitude");
+        @Html.Hidden("longitude");
+    }
+    <div id="wrapper-div">
+        <div id="map-div">
+            <div id='myMap' style="position: relative; width: 100%; height: 480px; left: 0px;
+                top: 0px; border: 1px solid;">
+            </div>
+        </div>
+    </div>
+    <div id="geoLocationStatus">
+    </div>
+</fieldset>
+<script type="text/javascript">
+
+    try {
+
+        var map = null;
+        map = new VEMap('myMap');
+        map.SetDashboardSize(VEDashboardSize.Small);
+        // Define the parameters for the map
+        map.LoadMap(new VELatLong(55.5, 12.5), 5, VEMapStyle.Road, false);
+        map.SetZoomLevel(6);
+    }
+    catch (err) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+    }
+
+</script>
+<script type="text/javascript">
+
+    var latField = $("#latitude");
+    var longField = $("#longitude");
+
+    /************************************** HTML 5 Geolocation, location aware browser  *********************************/
+    function success(position) {
+        var s = document.querySelector('#geoLocationStatus');
+        if (s.className == 'success') {
+            return;
+        }
+
+        // Updating the fields with the location of the browser.
+        var latitude = position.coords.latitude.toString();
+        var longitude = position.coords.longitude.toString();
+
+        latField.val(latitude);
+        longField.val(longitude);
+
+        $('form').submit();
+    }
+    /* Catching the error and communicating it to the UI via system-message DIV. */
+    function error(msg) {
+        var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : "Geolocation Failed"; s.className = 'error';
+    }
+
+    $(document).ready
+    (
+        function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error);
+            }
+            else {
+                error('not supported');
+            }
+        }
+    );
+    /************************************** End HTML 5 Geolocation, location aware browser  *********************************/
+
+</script>

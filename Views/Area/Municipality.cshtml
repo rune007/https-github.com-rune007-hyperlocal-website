@@ -1,0 +1,18 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PolygonDto>
+@{
+    ViewBag.Title = "Areas - " + ViewBag.KOMNAVN;
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        Areas - @ViewBag.KOMNAVN Municipality | @Html.ActionLink("News", "Municipality", "News", new { id = @ViewBag.Municipality }, null)
+        | @Html.ActionLink("Communities", "Municipality", "Community", new { id = @ViewBag.Municipality }, null)
+        | @Html.ActionLink("Users", "Municipality", "User", new { id = @ViewBag.Municipality }, null)
+    </h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_MunicipalityMenu", "GeoNavigationMenu", new { municipality = @ViewBag.Municipality });}
+}
+@{ IEnumerable<HLWebRole.HLServiceReference.PolygonDto> polygonDtos = Model; Html.RenderPartial("_MapArea", polygonDtos); }

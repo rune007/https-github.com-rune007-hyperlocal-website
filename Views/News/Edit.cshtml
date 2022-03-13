@@ -1,0 +1,80 @@
+﻿@model HLWebRole.Models.NewsItemModel
+@{
+    ViewBag.Title = "Edit News Post";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<link href="@Url.Content("~/Scripts/uploadify/uploadify.css")" rel="stylesheet" type="text/css" />
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/uploadify/jquery.uploadify.v2.1.4.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/uploadify/swfobject.js")" type="text/javascript"></script>
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Edit News Post</legend>
+        <div id="wrapper-div">
+            <div id="two-columns-left-column">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Address)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Address)<br />
+                    @Html.ValidationMessageFor(model => model.Address)
+                    @Html.ValidationMessageFor(model => model.Latitude)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.CategoryID)
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(model => model.CategoryID, Model.CategorySelectList, "Select Category")<br />
+                    @Html.ValidationMessageFor(model => model.CategoryID)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.AssignmentID)
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(model => model.AssignmentID, Model.AssignmentSelectList, "Select Assignment")
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Title)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Title)<br />
+                    @Html.ValidationMessageFor(model => model.Title)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Story)
+                </div>
+                <div class="editor-field">
+                    @Html.TextAreaFor(model => model.Story, 6, 44, null)<br />
+                    @Html.ValidationMessageFor(model => model.Story)
+                </div>
+                <div class="editor-label">
+                    @Html.EditorFor(model => model.IsLocalBreakingNews)
+                    @Html.LabelFor(model => model.IsLocalBreakingNews)
+                </div>
+                @Html.HiddenFor(model => model.Latitude)
+                @Html.HiddenFor(model => model.Longitude)
+                @Html.HiddenFor(model => model.NewsItemID)
+                <div id="fileuploader">
+                </div>
+                @Html.LabelFor(model => model.Photos, "Add Photo and Video Files, Max Size: 26 MB")<br />
+                <p>
+                    <input type="button" class="button" id="btnSave" value="Save Changes" />
+                </p>
+                <div id="mediaProcessingGif">
+                    <img src="/Content/images/processingMedia.gif" alt="x" width="150" />
+                </div>
+            </div>
+            <div id="two-columns-right-column">
+                <div id="map-div">
+                    @{Html.RenderPartial("_MapNewsEdit", Model);}
+                </div>
+            </div>
+        </div>
+        <div id="wrapper-div-two">
+            @Html.Partial("_EditNewsItemMedia", Model)
+        </div>
+    </fieldset>
+}

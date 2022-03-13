@@ -1,0 +1,27 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.UserDto>
+@{
+    ViewBag.Title = "Users Index";
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        Users - Index | @Html.ActionLink("News", "Index", "News")
+        | @Html.ActionLink("Communities", "Index", "Community")
+        | @Html.ActionLink("Areas", "Index", "Area")</h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_IndexMenu", "GeoNavigationMenu");}
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapUserList", Model);}
+    </div>
+</div>
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_UserList", Model);}
+    </ul>
+}

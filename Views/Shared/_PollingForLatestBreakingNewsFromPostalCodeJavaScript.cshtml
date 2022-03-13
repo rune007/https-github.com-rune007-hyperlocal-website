@@ -1,0 +1,76 @@
+﻿@*This script is polling for the latest breaking news from a PostalCode, asynchronously, and updates the UI.*@
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    var currentNewsItemId = 0;
+    var postalCode = @Html.Raw(Json.Encode(ViewBag.POSTNR_TXT));
+
+    /* Timer determining the intervals between our polling the server for new data. */
+    window.setInterval(PollingForNewData, 2000); //in milliseconds 
+
+    function PollingForNewData() {
+
+        /* Getting the NewsItemID of the current breaking news banner, if there is one. */
+        if ($(".breaking-news").length) {
+            currentNewsItemId = $(".breaking-news").attr("meta:id");
+        }
+
+        /* Doing the actual polling for new data. */
+        $.post
+        (
+			"/News/PollingForLatestBreakingNewsFromPostalCode",
+			{ newsItemId: currentNewsItemId, postalCode: postalCode },
+			function (data) {
+
+			    if (data != null) {
+
+			        // In case of error we show an error message.
+			        if (data.SystemMessage != null) {
+			            ShowSystemMessage(data.SystemMessage);
+			            return;
+			        }
+
+                    /* Displaying the latest breaking news. */
+			        DisplayNewBreakingNews(data);
+			    }
+			},
+			"json"
+		);
+    }
+
+
+    /* Updating the UI to diplay the latest breaking news. */
+    function DisplayNewBreakingNews(data) {
+
+        /* Removing the old breaking news banner. */
+        if ($("#link").length) {
+            $("#link").remove();
+        }
+
+        /* Removing a eventual previous breaking news banner. */
+        $("#system-message").children().remove();
+
+        /* Generating a new banner to display the latest breaking news. */
+        var newsBanner = $("<a href=\"/News/" + data.NewsItemID + "\"><div class=\"breaking-news\" meta:id=\"" + data.NewsItemID + "\">&nbsp;&nbsp;&nbsp;&nbsp;" +
+                    "<img alt=\"XX\" src=\"" + data.CoverPhotoLarge + "\" height=\"100\" />" +
+                     "   BREAKING NEWS - " + data.Title +  "</div></a>");
+
+        /* Appending the breaking news banner to the "system-message" div which is located in the layout page _LayoutBaseWrapper in the Views/Shared folder. */
+        newsBanner.appendTo("#system-message");
+        /* Showing "system-message" div to which our new breaking news banner is appended. */
+        $("#system-message").show();
+    }
+
+</script>

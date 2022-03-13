@@ -1,0 +1,18 @@
+﻿@model HLWebRole.HLServiceReference.PollDto
+<div id="poll-@Model.PollID" class="poll">
+    <h2>@Model.QuestionText</h2>
+    @{ var total = Model.PollOptions.Sum(o => o.Votes); }
+    <ul class="poll-options">
+        @foreach (var option in Model.PollOptions)
+        {
+            var percentValue = Math.Round(((decimal)option.Votes / (decimal)total) * 100M);
+            <li class="option" id="option-@option.PollOptionID"><b>@option.OptionText </b>
+                <div class="graph">
+                    <img src="/Content/images/poll-graph.gif" alt="x" height="10" width="@Math.Floor(percentValue)%" /></div>
+                <div class="values">@Math.Floor(percentValue) % (@option.Votes votes)</div>
+            </li>
+        }
+    </ul>
+    <div class="total">
+        There are @total total votes for this poll.</div>
+</div>

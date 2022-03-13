@@ -1,0 +1,46 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    var userDto = (HLWebRole.HLServiceReference.UserDto)ViewBag.UserDto;
+    ViewBag.Title = "News Posts by " + userDto.FirstName + " " + userDto.LastName;
+    Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+}
+<h2>
+    Users News Posts</h2>
+<fieldset>
+    <legend>News Posts by @userDto.FirstName @userDto.LastName</legend>
+    <div id="wrapper-div">
+        <div id="two-columns-left-column">
+            @if (@userDto.HasPhoto)
+            {
+                <img alt="@userDto.FirstName @userDto.LastName" src="@userDto.ImageBlobUri" height="300" />
+            }
+            else
+            {
+                <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="300" />
+            }
+            <div class="display-label">
+                <b>Bio:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => userDto.Bio)
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Member Since:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => userDto.CreateDate)
+            </div>
+        </div>
+        <div id="two-columns-right-column">
+            <div id="map-div">
+                @{
+                    Html.RenderPartial("_MapNewsItemList", Model);
+                }
+            </div>
+        </div>
+    </div>
+</fieldset>
+<ul id="item-list">
+    @{
+        Html.RenderPartial("_NewsItemList", Model);
+    }
+</ul>

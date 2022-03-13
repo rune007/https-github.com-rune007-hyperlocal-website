@@ -1,0 +1,87 @@
+﻿@model HLWebRole.Models.NewsItemModel
+@{
+    ViewBag.Title = "hyperlocal - " + Model.Title;
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+}
+<div>
+    <b>News - @Html.DisplayFor(model => model.CategoryName) - &nbsp;@Html.DisplayFor(model => model.CreateUpdateDate)</b>&nbsp;&nbsp;
+    #Views:&nbsp;<b>@Html.DisplayFor(model => model.NumberOfViews)</b>&nbsp;&nbsp; #Comments:&nbsp;<b>@Html.DisplayFor(model => model.NumberOfComments)</b>&nbsp;&nbsp;
+    #Shares:&nbsp;<b><span id="shareDiv">@Html.DisplayFor(model => model.NumberOfShares)</span></b>
+</div>
+<script src="../../Scripts/jquery-1.5.1.min.js" type="text/javascript"></script>
+@*The references below are necessary for the Lightbox image view plugin to work.*@
+<link href="@Url.Content("~/css/lightbox.css")" rel="stylesheet" type="text/css" media="screen" />
+<script src="@Url.Content("~/js/prototype.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/js/scriptaculous.js?load=effects,builder")" type="text/javascript"></script>
+<script src="@Url.Content("~/js/lightbox.js")" type="text/javascript"></script>
+@*<script src="../../Scripts/jquery-1.5.1.min.js" type="text/javascript"></script>*@
+<fieldset>
+    <legend>@Model.Title</legend>
+    <div id="wrapper-div">
+        <div id="four-blocks-left-top">
+            @*Using the sharethis.com button for social media sharing.*@ <span class="st_facebook_vcount">
+            </span><span class="st_twitter_vcount"></span><span class="st_sharethis_vcount">
+            </span>
+            <script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+            <script type="text/javascript">
+
+                try {
+                    /* Increments #NumberOfShares of NewsItem when shared on social media.*/
+                    function myCallbackFunction() {
+
+                        var newsItemId = '@(Model.NewsItemID)';
+
+                        jQuery.post(
+			        "/News/IncrementNumberOfShares",
+			        { newsItemId: newsItemId },
+			        function (data) {
+			        },
+			        "json");
+                    }
+
+                    stLight.options({ publisher: '12345' });
+                    stLight.subscribe("click", myCallbackFunction);
+
+                }
+                catch (err) {
+                    var s = document.querySelector('#system-message'); s.innerHTML = typeof msg == 'string' ? msg : err; s.className = 'error';
+                }
+      
+            </script>
+            <br />
+            <br />
+            <div class="display-field">
+                @Html.DisplayFor(model => model.Story)
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Posted By:</b></div>
+            <div class="display-field">
+                <a href="@Url.Action("Details", "User", new { id = Model.PostedByUserID })">@Html.DisplayFor(model => model.PostedByUserName)</a>
+            </div>
+            <br />
+            @if (Model.AssignmentTitle != null)
+            {
+                <div class="display-label">
+                    <b>Assignment:</b></div>
+                <div class="display-field">
+                    <a href="@Url.Action("Details", "Assignment", new { id = Model.AssignmentID })">@Html.DisplayFor(model => model.AssignmentTitle)</a>
+                </div>
+            }
+        </div>
+        <div id="four-blocks-right-top">
+            @Html.Partial("_NewsItemPhoto", Model)
+        </div>
+    </div>
+    <div id="wrapper-div-two">
+        <div id="four-blocks-right-bottom">
+            @Html.Partial("_NewsItemVideo", Model)
+        </div>
+        <div id="four-blocks-left-bottom">
+            <div id="map-div">
+                @{Html.RenderPartial("_MapNewsDetails", Model);}
+            </div>
+        </div>
+    </div>
+</fieldset>
+@{Html.RenderPartial("_CommentModule", Model);}

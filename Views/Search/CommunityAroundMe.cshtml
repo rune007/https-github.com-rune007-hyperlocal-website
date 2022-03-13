@@ -1,0 +1,29 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.CommunityDto>
+@{
+    ViewBag.Title = "Communities Around Me";
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+    //Getting a reverse geocode address
+    var reverseGeocodeAddress = "";
+    if (ViewBag.ReverseGeocodeAddress != null)
+    {
+        reverseGeocodeAddress = (string)ViewBag.ReverseGeocodeAddress;
+    } 
+}
+@Html.ActionLink("News Around Me >>", "AroundMe", "Search", null, new { @class = "button" })
+@Html.ActionLink("Users Around Me >>", "UserAroundMe", "Search", null, new { @class = "button" })
+<fieldset>
+    @if (reverseGeocodeAddress.Length > 0)
+    {
+        <legend>Communities around @reverseGeocodeAddress </legend>
+    }
+    else
+    {
+        <legend>Communities Around Me</legend>
+    }
+    <div id="wrapper-div">
+        @{Html.RenderPartial("_MapCommunityList", Model);}
+    </div>
+    <ul id="item-list">
+        @{Html.RenderPartial("_CommunityList", Model);}
+    </ul>
+</fieldset>

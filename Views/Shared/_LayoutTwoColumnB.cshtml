@@ -1,0 +1,23 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutBaseWrapper.cshtml";
+}
+@RenderSection("GeoNavigationMenuLinks", false)
+<div id="layout-wrapper">
+    @*This renders the left column.*@
+    <div id="three-columns-left-and-central-column">
+        @RenderBody()
+    </div>
+    @*This renders the right column.*@
+    <div id="poll-div">
+        @*This renders the current Poll.*@
+        @if (@ViewBag.Poll != null)
+        {
+            var pollDto = @ViewBag.Poll;
+            Html.RenderPartial("_AnonymousPoll", (HLWebRole.HLServiceReference.PollDto)pollDto);
+            Html.RenderPartial("_PollLink", (HLWebRole.HLServiceReference.PollDto)pollDto);
+        }
+    </div>
+</div>
+<div id="wrapper-div-two">
+</div>
+@RenderSection("ItemList", false)

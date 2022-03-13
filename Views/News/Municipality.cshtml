@@ -1,0 +1,28 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    ViewBag.Title = "News - " + ViewBag.KOMNAVN;
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        News - @ViewBag.KOMNAVN Municipality | @Html.ActionLink("Communities", "Municipality", "Community", new { id = @ViewBag.Municipality }, null)
+        | @Html.ActionLink("Users", "Municipality", "User", new { id = @ViewBag.Municipality }, null)
+        | @Html.ActionLink("Areas", "Municipality", "Area", new { id = @ViewBag.Municipality }, null)
+    </h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_MunicipalityMenu", "GeoNavigationMenu", new { municipality = @ViewBag.Municipality });}
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapNewsItemList", Model);}
+    </div>
+</div>
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_NewsItemList", Model);}
+    </ul>
+}

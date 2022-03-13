@@ -1,0 +1,56 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.UserDto>
+@{
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+    var assignmentDto = (HLWebRole.HLServiceReference.AssignmentDto)ViewBag.AssignmentDto;
+    ViewBag.Title = "Geo Temporal Assignment: " + assignmentDto.Title;
+    var numberOfSearchResults = ViewBag.NumberOfSearchResults;    
+}
+<fieldset>
+    <legend><a href="@Url.Action("Details", "Assignment", new { id = @assignmentDto.AssignmentID })">
+        Geo Temporal Assignment&nbsp; # Users alerted: @numberOfSearchResults</a></legend>
+    <div id="wrapper-div">
+        <div id="two-columns-left-column">
+            @if (@assignmentDto.ImageBlobUri != null)
+            {
+                <img alt="@assignmentDto.Title" src="@assignmentDto.ImageBlobUri" height="300" />
+            }
+            else
+            {
+                <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="300" />
+            }
+            <div class="display-label">
+                <b>Assignment Center:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => assignmentDto.AssignmentCenterAddress)
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Assignment Radius:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => assignmentDto.AssignmentRadius) km
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Title:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => assignmentDto.Title)
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Description:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => assignmentDto.Description)
+            </div>
+        </div>
+        <div id="two-columns-right-column">
+            <div id="map-div">
+                @{
+                    Html.RenderPartial("_MapUserList", Model);
+                }
+            </div>
+        </div>
+    </div>
+</fieldset>
+<ul id="item-list">
+    @{Html.RenderPartial("_UserList", Model);}
+</ul>

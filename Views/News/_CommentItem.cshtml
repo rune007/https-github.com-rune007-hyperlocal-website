@@ -1,0 +1,28 @@
+﻿@model HLWebRole.HLServiceReference.CommentDto
+@{
+    var userId = Convert.ToInt32(Session["userId"]);
+    var isAuthenticated = Convert.ToBoolean(Request.IsAuthenticated);      
+}
+<div id="comment-@Model.RowKey" class="comment">
+    <div class="comment-header">
+        @if (@Model.ThumbnailBlobUri != null)
+        {
+            <a href="@Url.RouteUrl("ControllerDetails", new { Controller = "User", Action = "Details", id = @Model.PostedByUserID })">
+                <img src="@Model.ThumbnailBlobUri" alt="@Model.PostedByUserName" height="40px" /></a><text>&nbsp;</text>
+        }
+        else
+        {
+            <a href="@Url.RouteUrl("ControllerDetails", new { Controller = "User", Action = "Details", id = @Model.PostedByUserID })">
+                <img src="../../Content/images/noPhotoAvailable.jpg" alt="@Model.PostedByUserName" height="40px" /></a><text>&nbsp;</text>
+        }
+        <span class="name">
+            @Html.ActionLink(@Model.PostedByUserName, "Details", "User", new { id = @Model.PostedByUserID }, new { @class = "name", @id = "comment-info" });
+        </span>- @Model.CreateDate
+        @if (Request.IsAuthenticated && @Model.PostedByUserID == userId)
+        {
+            <button id="btnDelete" class="delete-button" meta:id="@Model.RowKey">
+                Delete</button>
+        }
+    </div>
+    <blockquote class="body">@Model.CommentBody</blockquote>
+</div>

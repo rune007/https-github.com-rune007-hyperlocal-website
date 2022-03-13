@@ -1,0 +1,83 @@
+﻿@model HLWebRole.HLServiceReference.UserAlertDto
+@{
+    ViewBag.Title = "Edit Notifications";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<div id="one-column">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true)
+        <fieldset>
+            <legend>Adjust Your Alert Settings</legend>
+            <table style="background-color: White; width: 500px;">
+                <tr style="background-color: Silver;">
+                    <td>
+                        <b>
+                            @Html.Label("How do you want the Alerts?")</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 300px; margin: 20 20 20 20;">
+                        @Html.EditorFor(model => model.SendEmail)
+                        @Html.Label("Send Email")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.EditorFor(model => model.UsePushNotification)
+                        @Html.Label("Push Notification on the Phone")
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <table style="background-color: White; width: 500px;">
+                <tr style="background-color: Silver;">
+                    <td>
+                        <b>@Html.Label("What kind of Alerts do you want?")</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Html.EditorFor(model => model.AlertOnBreakingNews)
+                        @Html.Label("Alert me on Breaking News From Communities I follow")
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Html.EditorFor(model => model.AlertOnNews)
+                        @Html.Label("Alert me on All News From Communities I follow")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.EditorFor(model => model.AlertOnComments)
+                        @Html.Label("Alert me on Comments relating to my Activity")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.EditorFor(model => model.AlertOnContactRequests)
+                        @Html.Label("Alert me on Contact Requests")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.EditorFor(model => model.AlertOnMessages)
+                        @Html.Label("Alert me when I receive Messages")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.EditorFor(model => model.AlertOnNotificationFromEditors)
+                        @Html.Label("Alert me on Notifications From Editors")
+                    </td>
+                </tr>
+            </table>
+            @Html.HiddenFor(model => model.UserID)
+            <br />
+            <p>
+                <input type="submit" value="Save Settings" />
+            </p>
+        </fieldset>
+    }
+</div>

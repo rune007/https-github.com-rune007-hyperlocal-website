@@ -1,0 +1,12 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PostalCodeDto>
+<ul id="sidebar">
+    @foreach (var postalCode in Model)
+    {
+        <li>@Html.ActionLink(postalCode.POSTNR_TXT + " " + postalCode.POSTBYNAVN,
+                  "PostalCode", (string)Session["controller"],
+                  new { id = postalCode.POSTNR_TXT }, null)
+        </li>
+        
+        Session.Add(postalCode.POSTNR_TXT, postalCode.POSTNR_TXT + " " + postalCode.POSTBYNAVN);
+    }
+</ul>

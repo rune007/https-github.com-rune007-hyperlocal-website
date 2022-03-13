@@ -1,0 +1,135 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemCategoryIndexDto>
+@{
+    ViewBag.Title = "Categories";
+    int i = 0;
+}
+<fieldset>
+    <legend>Categories</legend>
+    <table style="width: 100%;" class="assignment-text">
+        @foreach (var item in Model)
+        {
+            if (@i++ % 2 == 0)
+            {       
+            <tr>
+                <td>
+                    <a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        @if (item.Latitude != null)
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+                11.645507812500017/5?mapSize=250,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="150" />
+                        }
+                        else
+                        {
+                            <img alt="@Html.Encode(@item.Title)" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+            11.645507812500017/5?mapSize=250,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="150" />
+                        }
+                    </a>
+                </td>
+                <td style="border: 3px solid #AB003C;">
+                    <a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        <div style="font-size: 13px; color: black;">
+                            <div style="font-size: 20px; color: black;">
+                                <b>@item.CategoryName</b>
+                            </div>
+                            <br />
+                            @if (item.CreateUpdateDateToString != null)
+                            {
+                                <b>Latest Activity: </b>@item.CreateUpdateDate
+                            }
+                            <br />
+                            <br />
+                            <b># News Posts: </b>@item.NumberOfNewsItemsInCategory
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="150" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    @if (item.NewsItemID != null)
+                    {
+                        <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                            <div style="font-size: 13px; color: black;">
+                                <b>@item.Title</b><br />
+                                <br />
+                                @Html.Truncate(@item.Story, 280)
+                            </div>
+                        </a>
+                    }
+                </td>
+            </tr>
+            }
+            else
+            {
+            <tr>
+                <td style="border: 3px solid #AB003C;">
+                    <a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        <div style="font-size: 13px; color: black;">
+                            <div style="font-size: 20px; color: black;">
+                                <b>@item.CategoryName</b>
+                            </div>
+                            <br />
+                            @if (item.CreateUpdateDateToString != null)
+                            {
+                                <b>Latest Activity: </b>@item.CreateUpdateDate
+                            }
+                            <br />
+                            <br />
+                            <b># News Posts: </b>@item.NumberOfNewsItemsInCategory
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Category", new { id = @item.CategoryID })">
+                        @if (item.Latitude != null)
+                        {
+                            <img alt="@Html.Encode(@item.Title)" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,11.645507812500017/5?mapSize=250,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="150" />
+                        }
+                        else
+                        {
+                            <img alt="@Html.Encode(@item.Title)" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,11.645507812500017/5?mapSize=250,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="150" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    @if (item.NewsItemID != null)
+                    {
+                        <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                            <div style="font-size: 13px; color: black;">
+                                <b>@item.Title</b><br />
+                                <br />
+                                @Html.Truncate(@item.Story, 280)
+                            </div>
+                        </a>
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="150" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                        }
+                    </a>
+                </td>
+            </tr>           
+            }
+        }
+    </table>
+</fieldset>

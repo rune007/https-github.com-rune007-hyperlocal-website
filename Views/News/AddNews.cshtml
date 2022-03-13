@@ -1,0 +1,164 @@
+﻿@model HLWebRole.Models.NewsItemModel
+@{
+    ViewBag.Title = "Add News";
+    Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+}
+<link href="@Url.Content("~/Scripts/uploadify/uploadify.css")" rel="stylesheet" type="text/css" />
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/uploadify/jquery.uploadify.v2.1.4.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/uploadify/swfobject.js")" type="text/javascript"></script>
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Add News</legend>
+        <div id="wrapper-div">
+            <div id="two-columns-left-column">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Address)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Address)<br />
+                    @Html.ValidationMessageFor(model => model.Address)
+                    @Html.ValidationMessageFor(model => model.Latitude)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.CategoryID)
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(model => model.CategoryID, Model.CategorySelectList, "Select Category")<br />
+                    @Html.ValidationMessageFor(model => model.CategoryID)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.AssignmentID)
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(model => model.AssignmentID, Model.AssignmentSelectList, "Select Assignment")
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Title)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Title)<br />
+                    @Html.ValidationMessageFor(model => model.Title)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Story)
+                </div>
+                <div class="editor-field">
+                    @Html.TextAreaFor(model => model.Story, 6, 44, null)<br />
+                    @Html.ValidationMessageFor(model => model.Story)
+                </div>
+                <div class="editor-label">
+                    @Html.EditorFor(model => model.IsLocalBreakingNews)
+                    @Html.LabelFor(model => model.IsLocalBreakingNews)
+                </div>
+                @Html.HiddenFor(model => model.Latitude)
+                @Html.HiddenFor(model => model.Longitude)
+                @Html.HiddenFor(model => model.PostedByUserID)
+                <div id="fileuploader">
+                </div>
+                @Html.LabelFor(model => model.Photos, "Add Photo and Video Files, Max Size: 26 MB")<br />
+                <p>
+                    <input type="button" class="button" id="btnSave" value="Publish The News!" />
+                </p>
+                <div id="mediaProcessingGif">
+                    <img src="/Content/images/processingMedia.gif" alt="x" width="150" />
+                </div>
+            </div>
+            <div id="two-columns-right-column">
+                <div id="map-div">
+                    @{Html.RenderPartial("_MapNewsCreate", Model);}
+                </div>
+            </div>
+        </div>
+    </fieldset>
+}
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    var mediaProcessingGif = $("#mediaProcessingGif");
+    mediaProcessingGif.hide();
+
+    /* This flag tell us whether Uploadify has any files to upload, in case of a file is added to Uploadify's queue of files to upload, the
+    'onSelectOnce' event will be fired and set the noFilesToUpload flag to false. */
+    var noFilesToUpload = true;
+    var newsItemId;
+
+    $(window).load(
+
+    function () {
+        $("#fileuploader").uploadify({
+            'uploader': '@Url.Content("/Scripts/uploadify/uploadify.swf")',
+            'cancelImg': '/Scripts/uploadify/cancel.png',
+            'buttonText': 'Browse For Files',
+            'script': '@Url.Action("Upload")',
+            'folder': '/uploads',
+            'scriptData': { 'hostItemId': newsItemId },
+            'onAllComplete': function (event, data) { window.location = "/News/" + newsItemId; },
+            'onError': function (a, b, c, d) {
+                if (d.type === "File Size")
+                    alert("The File: " + c.name + " Violates the File Size Limit, which is: " + Math.round(d.info / (1024 * 1024)) + "MB, Please Remove the File!")
+            },
+            'onSelectOnce': function (event, data) { noFilesToUpload = false; },
+            'fileDesc': 'Media Files',
+            'fileExt': '*.jpg;*.jpeg;*.avi;*.flv;*.mov;*.mpg;*.mp4;*.m4v;*.wmv;*.3gp',
+            'sizeLimit': 27000000,
+            'multi': true,
+            'auto': false
+        });
+
+        $("#btnSave").click
+        (
+            function () {
+                /* Because we are posting the form asynchronously we need to enforce validation with the code just below. */
+                var isFormValid = $('form').validate().form();
+                if (isFormValid) {
+                    var url = $("form").attr("action");
+                    var inputData = $("form").serialize();
+                    mediaProcessingGif.show();
+                    $.post(url, inputData, function (data) {
+                        // Hiding eventual old error messages.
+                        systemMessageDiv.hide();
+
+                        if (data != null) {
+
+                            // In case of error we show an error message.
+                            if (data.SystemMessage != null) {
+                                ShowSystemMessage(data.SystemMessage);
+                                mediaProcessingGif.hide();
+                                return;
+                            }
+
+                            newsItemId = data.NewsItemID;
+                            $('#fileuploader').uploadifySettings("scriptData", { 'hostItemId': newsItemId });
+                            $('#fileuploader').uploadifyUpload();
+                            /* The noFilesToUpload flag determines how we are being redirected to the Details view after processing form input.
+                            If noFilesToUpload is false, we are being redirected to the Details view, via Uploadify's onAllComplete event.
+                            If noFilesToUpload is true, we are being redirected to the Details view via the code just below. */
+                            if (noFilesToUpload) {
+                                if (newsItemId != null) {
+                                    window.location = "/News/" + newsItemId;
+                                }
+                            }
+                        };
+                    });
+                }
+            }
+        );
+    }
+);
+
+</script>

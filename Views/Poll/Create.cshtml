@@ -1,0 +1,42 @@
+﻿@model HLWebRole.Models.PollModel
+@{
+    ViewBag.Title = "Create Poll";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+    var communityName = @ViewBag.CommunityName;
+    var communityPhoto = @ViewBag.CommunityPhoto;
+}
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<div id="one-column">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true)
+        <fieldset>
+            <legend>Create Poll for community @communityName
+                @if (communityPhoto != null)
+                {
+                    <img alt="@communityName" src="@communityPhoto" height="50" />
+                }
+                else
+                {
+                    <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="50" />
+                }
+            </legend>
+            <div class="editor-label">
+                <h2>
+                    Enter Poll Question:</h2>
+            </div>
+            <div class="editor-label">
+                @Html.LabelFor(model => model.QuestionText)
+            </div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.QuestionText)<br />
+                @Html.ValidationMessageFor(model => model.QuestionText)
+            </div>
+            @Html.HiddenFor(model => model.AreaIdentifier)
+            <p>
+                <input type="submit" value="Create Poll" />
+            </p>
+        </fieldset>
+    }
+</div>

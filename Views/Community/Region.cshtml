@@ -1,0 +1,28 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.CommunityDto>
+@{
+    ViewBag.Title = "Communities - " + ViewBag.REGIONNAVN;
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        Communities - Region @ViewBag.REGIONNAVN
+        | @Html.ActionLink("News", "Region", "News", new { id = @ViewBag.Region }, null)
+        | @Html.ActionLink("Users", "Region", "User", new { id = @ViewBag.Region }, null)
+        | @Html.ActionLink("Areas", "Region", "Area", new { id = @ViewBag.Region }, null)</h2>
+}
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_RegionMenu", "GeoNavigationMenu", new { region = @ViewBag.Region });}
+}
+<div id="wrapper-div">
+    <div id="map-div">
+        @{Html.RenderPartial("_MapCommunityList", Model);}
+    </div>
+</div>
+@section ItemList
+{
+    <ul id="item-list">
+        @{Html.RenderPartial("_CommunityList", Model);}
+    </ul>
+}

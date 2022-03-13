@@ -1,0 +1,156 @@
+﻿@model HLWebRole.Models.UserModel
+@{
+    ViewBag.Title = "User: " + Model.FirstName + " " + Model.LastName;
+    Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+
+    /* Presenting the latest NewsItems created by User. */
+    var newsItemDtos = (IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>)ViewBag.NewsItemDtos;
+    var numberOfNewsItemsCreatedByUser = (string)ViewBag.NumberOfNewsItemsCreatedByUser;
+
+    // For default we use the _LayoutTwoColumn layout page. But via ViewBag we can dynamically set a different layout
+    // page from our controllers when we want. We use this for example when the user is doing things from their
+    // submenu under the profile menu item in the toplevel menu.
+    if (ViewBag.Layout == null)
+    {
+        Layout = "~/Views/Shared/_LayoutTwoColumn.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/" + ViewBag.Layout;
+    }   
+}
+<h2>
+    User Info</h2>
+<fieldset>
+    <legend>@Model.FirstName @Model.LastName</legend>
+    <div id="wrapper-div">
+        <div id="two-columns-left-column">
+            @if (@Model.ImageBlobUri != null)
+            {
+                <img alt="@Model.FirstName @Model.LastName" src="@Model.ImageBlobUri" height="300" />
+            }
+            else
+            {
+                <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="300" />
+            }
+            <div class="display-label">
+                <b>Bio:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => model.Bio)
+            </div>
+            <br />
+            <div class="display-label">
+                <b>Member Since:</b></div>
+            <div class="display-field">
+                @Html.DisplayFor(model => model.CreateDate)
+            </div>
+            <br />
+            @Html.HiddenFor(model => model.UserID)
+            @*We only display the contact info if the users have agreed to share contact info with eachother.*@
+            @if (Model.AreUsersSharingContactInfo)
+            {
+                <div class="display-label">
+                    <b>Email:</b></div>
+                <div class="display-field">
+                    @Html.DisplayFor(model => model.Email)
+                </div>
+                <br />
+                <div class="display-label">
+                    <b>PhoneNumber:</b></div>
+                <div class="display-field">
+                    @Html.DisplayFor(model => model.PhoneNumber)
+                </div>
+                <br />
+                <div class="display-label">
+                    <b>Address:</b></div>
+                <div class="display-field">
+                    @Html.DisplayFor(model => model.Address)
+                </div>               
+                <br />
+            }
+            @if (Model.Email != Context.User.Identity.Name)
+            {
+                <input type="button" class="button" id="btnMessage" value="Send Message" />
+                <text>&nbsp; &nbsp;</text>
+            }
+            @if (Request.IsAuthenticated)
+            {
+@*We only display the Request Contact Info button if the users don't share contact info.*@
+                if (!Model.AreUsersSharingContactInfo && Model.Email != Context.User.Identity.Name)
+                {
+                    if (Model.IsContactInfoRequestPending)
+                    {
+                <label>
+                    Contact Info Request is Pending</label>
+                    }
+                    else
+                    {
+                <input type="button" class="button" id="btnContact" value="Request Contact Info" />
+                    }
+                }
+            }
+            <br /><br />
+            @Html.ActionLink("# News Posts " + numberOfNewsItemsCreatedByUser + " >>", "News", "User", new { id = Model.UserID }, new { @class = "button" })
+            <br />
+            @{Html.RenderPartial("_ManageUserProfileLinks", Model);}
+        </div>
+        <div id="two-columns-right-column">
+            @{Html.RenderPartial("_MapUserDetails", Model);}
+        </div>
+    </div>
+</fieldset>
+<ul id="item-list">
+    @{
+        Html.RenderPartial("_NewsItemList", (IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>)newsItemDtos);
+    }
+</ul>
+<script type="text/javascript">
+
+    var targetUserId = $("#UserID").val();
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+
+    /* Opening a view to send a Message. */
+    $("#btnMessage").click(function () {
+        window.location = "/Message/Send";
+    }
+    );
+
+    /* Requesting ContactInfo. */
+    $("#btnContact").click(function () {
+        var confirmStatus = confirm("Are you sure you want to share contact info with this user?");
+        if (confirmStatus) {
+            $.post
+                (
+		            "/ContactInfo/RequestContactInfo",
+		            { targetUserId: targetUserId },
+		            function (data) {
+		                systemMessageDiv.hide();
+		                /* Showing an eventual SystemMessage (error) in case something goes wrong. */
+		                if (data.SystemMessage != null) {
+		                    ShowSystemMessage(data.SystemMessage);
+		                }
+		                else {
+		                    /* Updating the UI.*/
+		                    $("#btnContact").val('Contact Info Request Sent');
+		                    $("#btnContact").attr("disabled", "disabled"); ;
+		                }
+		            },
+		            "json"
+	            );
+        }
+    }
+    );
+
+</script>

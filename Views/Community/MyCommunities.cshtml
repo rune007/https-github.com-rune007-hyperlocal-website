@@ -1,0 +1,141 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.CommunityDto>
+@{
+    ViewBag.Title = "My Communities";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+}
+<fieldset>
+    @Html.ActionLink("Create New Community >>", "Create", "Community", null, new { @class = "button" })
+    <legend>
+        @if (@Model.Count() > 0)
+        {
+            <text>My Communities</text>
+        }
+        else
+        {
+            <text>You have no communities</text>
+        }
+    </legend>
+    @{Html.RenderPartial("_Pager");}
+    <table style="width: 100%;">
+        <tr>
+            <th>
+                Community
+            </th>
+            <th>
+            </th>
+            <th>
+            </th>
+            <th>
+                #Users
+            </th>
+            <th>
+                Created/Updated
+            </th>
+            <th>
+                Admin
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr id="row-@item.CommunityID">
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.CommunityID })">
+                        @if (item.MediumSizeBlobUri != null)
+                        {
+                            <img alt="@item.Name" src="@item.MediumSizeBlobUri" height="100" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="100" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.CommunityID })">
+                        <img alt="@item.Name" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594, 11.645507812500017/5?mapSize=300,200&pp=@item.PolygonCenterLatitude,@item.PolygonCenterLongitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY" height="100" />
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Community", new { id = @item.CommunityID })">
+                        @Html.DisplayFor(modelItem => item.Name)
+                        @if (item.LatestActivityToString != null)
+                        {
+                            <br />
+                            <br />@Html.DisplayFor(modelItem => item.LatestActivityToString)
+                        }
+                    </a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NumberOfUsersInCommunity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreateUpdateDate)
+                </td>
+                <td>
+                    @Html.ActionLink("Create New Poll", "Create", "Poll", new { id = @item.CommunityID }, null)
+                    <br />
+                    @Html.ActionLink("Manage Community Polls", "Community", "Poll", new { id = @item.CommunityID }, null)
+                    <br />
+                    @Html.ActionLink("Edit Community", "Edit", new { id = @item.CommunityID })
+                    <br />
+                    @* @Html.ActionLink("Delete Community", "Delete", new { /* id=item.PrimaryKey */ })*@
+                    <button meta:id="@item.CommunityID" meta:title="@item.Name">
+                        Delete Community
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>
+<script type="text/javascript">
+
+    // We use the "system-message" div to communicate error messages to the UI in case something goes wrong, I have an SystemMessageModel with the property
+    // "SystemMessage", which is used to transport the error message from the controller to the view.
+    var systemMessageDiv = $("#system-message");
+    systemMessageDiv.hide();
+
+    // Displays the error message through the "system-message" div.
+    function ShowSystemMessage(systemMessage) {
+        systemMessageDiv.text(systemMessage);
+        systemMessageDiv.addClass("error");
+        systemMessageDiv.show();
+    }
+
+    /* Deleting Community. */
+    $('button').click
+    (
+    	function () {
+    	    var communityName = $(this).attr("meta:title");
+    	    var confirmMessage = 'Are you sure you want to Delete Community "' + communityName + '"?';
+    	    var doDelete = confirm(confirmMessage);
+
+    	    if (doDelete) {
+    	        var communityId = $(this).attr("meta:id");
+
+    	        $.post
+                (
+			        "/Community/Delete",
+			        { communityId: communityId },
+			        function (data) {
+			            // Hiding eventual old error messages.
+			            systemMessageDiv.hide();
+
+			            if (data != null) {
+			                // In case of error we show an error message.
+			                if (data.SystemMessage != null) {
+			                    ShowSystemMessage(data.SystemMessage);
+			                    return;
+			                }
+                            /* Removing item. */
+			                $("#row-" + communityId).slideUp();
+			                $("#row-" + communityId).remove();
+			            }
+			        },
+			        "json"
+		        );
+    	    }
+    	}
+    );
+
+</script>

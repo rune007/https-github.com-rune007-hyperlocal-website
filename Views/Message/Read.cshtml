@@ -1,0 +1,61 @@
+﻿@model HLWebRole.Models.MessageModel
+@{
+    ViewBag.Title = "Read";
+    Layout = "~/Views/Shared/_LayoutUserHome.cshtml";
+    var messageDto = (HLWebRole.HLServiceReference.MessageDto)ViewBag.MessageDto;  
+}
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<div id="one-column" style="width: 51%;">
+    <fieldset>
+        <legend>
+            <img alt="@messageDto.SenderUserName" src="@messageDto.SenderPhotoUri" height="50" />
+            Message From<br />
+            @messageDto.SenderUserName</legend>
+        <div class="display-label">
+            <b>Date:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => messageDto.CreateDate)
+        </div>
+        <br />
+        <div class="display-label">
+            <b>Subject:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => messageDto.Subject)
+        </div>
+        <br />
+        <div class="display-label">
+            <b>Message:</b></div>
+        <div class="display-field">
+            @Html.DisplayFor(model => messageDto.MessageBody)
+        </div>
+        <br />
+        <h2>
+            Write A Reply:</h2>
+        @using (Html.BeginForm("Send", "Message", FormMethod.Post))
+        {
+            @Html.ValidationSummary(true)             
+            <div class="editor-label">
+                @Html.LabelFor(model => model.Subject)
+            </div>         
+            <div class="editor-field" id="message-text">
+                @Html.EditorFor(model => model.Subject)
+                <br />
+                @Html.ValidationMessageFor(model => model.Subject)
+            </div>
+            <div class="editor-label">
+                @Html.LabelFor(model => model.MessageBody)
+            </div>
+            <div class="editor-field">
+                @Html.TextAreaFor(model => model.MessageBody, 6, 69, null)<br />
+                @Html.ValidationMessageFor(model => model.MessageBody)
+            </div>
+            @Html.HiddenFor(model => model.PartitionKey)
+            @Html.HiddenFor(model => model.SenderUserID)
+            @Html.HiddenFor(model => model.ReceiverUserName)
+            <p>
+                <input type="submit" value="Send Your Reply" />
+            </p>
+        }
+    </fieldset>
+</div>

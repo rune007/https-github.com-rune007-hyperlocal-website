@@ -1,0 +1,20 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.PolygonDto>
+@{
+    ViewBag.Title = "Areas - Index";
+    Layout = "~/Views/Shared/_LayoutThreeColumn.cshtml";
+}
+@*The section GeoNavigationMenuLinks renders links which allows navigating between different content (News, Communities, Users, etc.) at the same geographical level.*@
+@section GeoNavigationMenuLinks
+{
+    <h2>
+        Areas - Index | @Html.ActionLink("News", "Index", "News")
+        | @Html.ActionLink("Communities", "Index", "Community")
+        | @Html.ActionLink("Users", "Index", "User")
+    </h2>
+}
+@*The section GeoNavigationMenu renders links which allows us to drill down into geographical granularity (Denmark -> Region -> Municipality -> Postal Code).*@
+@section GeoNavigationMenu
+{
+    @{Html.RenderAction("_IndexMenu", "GeoNavigationMenu");}
+}
+@{ IEnumerable<HLWebRole.HLServiceReference.PolygonDto> polygonDtos = Model; Html.RenderPartial("_MapArea", polygonDtos); }

@@ -1,0 +1,13 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.RegionDto>
+<ul id="sidebar">
+    @foreach (var region in Model)
+    {
+        <li>@Html.ActionLink("Region " + region.REGIONNAVN,
+                  "Region", (string)Session["controller"], new { id = region.UrlRegionName }, null)
+        </li>
+
+        // Storing the real region name "Sjælland" together with the URL name "Sjaelland", 
+        // in order to render real name on website in next level of navigation.
+        Session.Add(region.UrlRegionName, region.REGIONNAVN);
+    }
+</ul>

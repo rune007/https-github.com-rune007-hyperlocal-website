@@ -1,0 +1,164 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.NewsItemDto>
+@{
+    int i = 0;
+    var categoryDto = (HLWebRole.HLServiceReference.NewsItemCategoryIndexDto)ViewBag.CategoryDto;
+    var categoryName = categoryDto.CategoryName;
+    var latestActivity = categoryDto.CreateUpdateDateToString;
+    var numberOfNewsItems = categoryDto.NumberOfNewsItemsInCategory;
+    ViewBag.Title = "Category: " + categoryName;    
+}
+<h2>
+    Category
+</h2>
+<fieldset>
+    <legend>@categoryName</legend>
+    @{
+        Html.RenderPartial("_MapNewsItemList", Model);
+    }
+    <table style="width: 100%;" class="assignment-text">
+        @foreach (var item in Model)
+        {
+            if (@i++ % 2 == 0)
+            {       
+            <tr>
+                <td>
+                    @if (item.NewsItemID != null)
+                    {                   
+                        <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                            <div class="black-table-text">
+                                @item.CreateUpdateDate<br />
+                                <br />
+                                <b>@item.Title</b><br />
+                                <br />
+                                @Html.Truncate(@item.Story, 210)
+                                <br />
+                                <br />
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Details", "User", new { id = @item.PostedByUserID })">
+                            <div class="black-table-text">
+                                Posted By: <b>@item.PostedByUserName</b>
+                            </div>
+                        </a>                    
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="150" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                        }
+                    </a>
+                </td>
+                <td style="width: 140px;">
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                    @if (item.HasVideo)
+                    { <b>Video Post</b> <br />}
+                    <br />
+                    @if (@item.AssignmentID != null)
+                    {
+                        <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                            <div class="black-table-text">
+                                Assignment: <b>@item.AssignmentTitle</b>
+                            </div>
+                        </a>
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                        @if (item.Latitude != null)
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+                11.645507812500017/5?mapSize=250,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="150" />
+                        }
+                        else
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+            11.645507812500017/5?mapSize=250,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="150" />
+                        }
+                    </a>
+                </td>
+            </tr>
+            }
+            else
+            {
+            <tr>
+                <td>
+                    <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                        @if (item.CoverPhotoMediumSize != null)
+                        {
+                            <img alt="@item.Title" src="@item.CoverPhotoMediumSize" height="150" />
+                        }
+                        else
+                        {
+                            <img alt="no-photo-available" src="../../Content/images/noPhotoAvailable.jpg" height="150" />
+                        }
+                    </a>
+                </td>
+                <td>
+                    @if (item.NewsItemID != null)
+                    {                   
+                        <a href="@Url.Action("Details", "News", new { id = @item.NewsItemID })">
+                            <div class="black-table-text">
+                                @item.CreateUpdateDate<br />
+                                <br />
+                                <b>@item.Title</b><br />
+                                <br />
+                                @Html.Truncate(@item.Story, 210)
+                                <br />
+                                <br />
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Details", "User", new { id = @item.PostedByUserID })">
+                            <div class="black-table-text">
+                                Posted By: <b>@item.PostedByUserName</b>
+                            </div>
+                        </a>                    
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                        @if (item.Latitude != null)
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+                11.645507812500017/5?mapSize=250,200&pp=@item.Latitude,@item.Longitude;22&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+                height="150" />
+                        }
+                        else
+                        {
+                            <img alt="@item.Title" src="http://dev.virtualearth.net/REST/v1/Imagery/Map/Road/55.912272930063594,
+            11.645507812500017/5?mapSize=250,200&key=Atx6C4-6W6IofeQA3RsyCWSbKeE0Z9QVrmFxNIMagT0rrxQF6_R25A1d-N_r0bXY"
+            height="150" />
+                        }
+                    </a>
+                </td>
+                <td style="width: 140px;">
+                    <b>#Views: </b>@item.NumberOfViews<br />
+                    <b>#Comments: </b>@item.NumberOfComments<br />
+                    <b>#Shares: </b>@item.NumberOfShares<br />
+                    @if (item.HasVideo)
+                    { <b>Video Post</b> <br />}
+                    <br />
+                    @if (@item.AssignmentID != null)
+                    {
+                        <a href="@Url.Action("Details", "Assignment", new { id = @item.AssignmentID })">
+                            <div class="black-table-text">
+                                Assignment: <b>@item.AssignmentTitle</b>
+                            </div>
+                        </a>
+                    }
+                </td>
+            </tr>           
+            }
+        }
+    </table>
+    @{Html.RenderPartial("_Pager");}
+</fieldset>

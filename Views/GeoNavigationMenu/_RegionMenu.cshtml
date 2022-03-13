@@ -1,0 +1,12 @@
+﻿@model IEnumerable<HLWebRole.HLServiceReference.MunicipalityDto>
+<ul id="sidebar">
+    @foreach (var municipality in Model)
+    {
+        <li>@Html.ActionLink(municipality.KOMNAVN,
+                    "Municipality", (string)Session["controller"],
+                  new { id = municipality.UrlMunicipalityName }, null)
+        </li>
+        
+        Session.Add(municipality.UrlMunicipalityName, municipality.KOMNAVN);
+    }
+</ul>
